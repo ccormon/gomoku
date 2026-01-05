@@ -1,0 +1,73 @@
+ALGORITHME DU MINIMAX
+
+
+Comment determiner la fonction d'evaluation
+
+
+https://www.youtube.com/watch?v=sDOILCbrvhc
+
+Video tres claire sur l'utilisation de l'agorithme
+
+
+Pseudocode :
+
+function minimax(node, depth, maximizingPlayer) is
+	if depth = 0 or node is a terminal node then
+		return the heuristic value of node
+	if maximizingPlayer then
+		value := −∞
+		for each child of node do
+			value := max(value, minimax(child, depth − 1, FALSE))
+	else (* minimizing player *)
+		value := +∞
+		for each child of node do
+			value := min(value, minimax(child, depth − 1, TRUE))
+	return value
+
+(* Initial call *)
+minimax(origin, depth, TRUE)
+
+
+Pour nous depth = 10
+
+
+On peut optimiser cet algorithme grace a la technique de l'elagage alpha-beta
+
+
+ELAGAGE ALPHA BETA
+
+
+https://www.youtube.com/watch?v=YwVlAamXm6c
+
+Meme chaine que pour la video precedente
+
+
+Lorsqu'on a n coups possibles et qu'on calcule sur les d prochains coups :
+	- minimax classique :		O(n^{d})
+	- minimax avec elagage :	O(n^{d/2})
+Donc on economise racine carree moins d'operations, ce qui est monumental quand
+on a une profondeur de 10 coups
+
+
+Pseudocode :
+
+(* α est initialisé à -∞. β est initialisé à +∞. *)
+fonction alphabeta(nœud, α, β) /* α est toujours inférieur à β */
+	si nœud est une feuille alors
+		retourner la valeur de nœud
+	sinon
+		si nœud est de type Min alors
+			v = +∞
+			pour tout fils de nœud faire
+				v = min(v, alphabeta(fils, α, β))
+				si α ≥ v alors  /* coupure alpha */
+					retourner v
+				β = min(β, v)
+		sinon
+			v = -∞
+			pour tout fils de nœud faire
+				v = max(v, alphabeta(fils, α, β))
+				si v ≥ β alors /* coupure beta */
+					retourner v
+				α = max(α, v)
+		retourner v
