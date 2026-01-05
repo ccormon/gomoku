@@ -74,3 +74,14 @@ fonction alphabeta(nœud, α, β) /* α est toujours inférieur à β */
 
 
 -> VOIR LA SUCCESSION D'IMAGES POUR COMPRENDRE L'ALGORITHME
+
+
+Plan :
+-> Coder l'algorithme minimax
+	-> Commencer avec une profondeur de 3 pour verifier plus facilement les
+		resulats
+-> Coder une interface graphique sur terminal pour les tests
+	-> Stocker les positions des jetons poses par le joueur et par l'adversaire
+	-> Creer une map de 19x19 constituee de points et completer par des O et X
+		pour les jetons du joueur et de l'adeversaire
+-> Modifier le minimax en ajouter l'elagage alpha-beta
