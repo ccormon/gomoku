@@ -71,3 +71,6 @@ fonction alphabeta(nœud, α, β) /* α est toujours inférieur à β */
 					retourner v
 				α = max(α, v)
 		retourner v
+
+
+-> VOIR LA SUCCESSION D'IMAGES POUR COMPRENDRE L'ALGORITHME
