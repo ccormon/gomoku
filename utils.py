@@ -1,0 +1,2 @@
+BOARDSIZE = 19
+DEPTH = 10
