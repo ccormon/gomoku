@@ -29,9 +29,9 @@ class Gomoku():
 						print(f"{i}      ", end="")
 				match self.boardMap[i][j]:
 					case 1:
-						state = utils.PLAYER
-					case 2:
 						state = utils.AI
+					case -1:
+						state = utils.PLAYER
 					case _:
 						state = utils.EMPTY
 				print(f"{state}   ", end="")
@@ -42,4 +42,7 @@ class Gomoku():
 
 
 	def placeAStone(self, isAI, row, column):
-		self.boardMap[row][column] = 2 if isAI else 1
+		self.boardMap[row][column] = 1 if isAI else -1
+
+
+	def
