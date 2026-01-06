@@ -8,7 +8,7 @@ class Gomoku():
 
 
 	"""
-	TEST FUNCTION TO REMOVE BEFORE SUBMIT
+	TEST FUNCTION
 	"""
 	def drawBoardInTerminal(self):
 		print("        ", end="")
@@ -41,8 +41,23 @@ class Gomoku():
 		print(f"AI:     {utils.AI}")
 
 
-	def placeAStone(self, isAI, row, column):
-		self.boardMap[row][column] = 1 if isAI else -1
+	def isPositionOK(self, row, col):
+		if row < 0 or row > 18 or col < 0 or row > 18:
+			return False
+		if self.boardMap[row][col] != 0:
+			return False
+		return True
 
 
-	def
+	def placeAStone(self, isAI, row, col):
+		if self.isPositionOK(row, col):
+			self.boardMap[row][col] = 1 if isAI else -1
+
+
+	def evaluate(self, row, col):
+		directions = [
+			[-1, 1],
+			[0, 1],
+			[1, 1],
+			[1, 0]
+		]
