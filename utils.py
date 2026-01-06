@@ -1,2 +1,6 @@
 BOARDSIZE = 19
 DEPTH = 10
+
+PLAYER = 'X'
+AI = 'O'
+EMPTY = '·'
