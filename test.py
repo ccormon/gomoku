@@ -1,4 +1,4 @@
-from gomoku import Gomoku
+from gomokuAI import Gomoku
 
 
 def main():
