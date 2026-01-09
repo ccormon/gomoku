@@ -1,5 +1,6 @@
 import utils
 import argparse
+from gomoku import Gomoku
 
 
 def parse_args():
@@ -8,7 +9,7 @@ def parse_args():
 	return parser.parse_args()
 
 
-def drawBoardInTerminal(boardMap):
+def drawBoardInTerminal(boardMap, nbPlayer):
 	print("        ", end="")
 	for i in range(utils.BOARDSIZE):
 		if i < 10:
@@ -27,7 +28,7 @@ def drawBoardInTerminal(boardMap):
 					print(f"{i}      ", end="")
 			match boardMap[i][j]:
 				case 1:
-					state = utils.AI
+					state = utils.PLAYER2
 				case -1:
 					state = utils.PLAYER1
 				case _:
@@ -35,18 +36,23 @@ def drawBoardInTerminal(boardMap):
 			print(f"{state}   ", end="")
 		print()
 	print()
-	print(f"Player: {utils.PLAYER1}")
-	print(f"AI:     {utils.AI}")
+	print(f"Player1: {utils.PLAYER1}")
+	if nbPlayer == 1:
+		print(f"AI:      {utils.PLAYER2}")
+	else:
+		print(f"Player2: {utils.PLAYER2}")
+
+
+def play2Player():
+	game = Gomoku()
+	drawBoardInTerminal(Gomoku.getBoard(), 2)
 
 
 def main():
 	args = parse_args()
-	if args.player == 1:
-		print('You play against AI')
-	elif args.player == 2:
-		print('You play against the dummy next to you (be careful)')
-	else:
-		print('wtf')
+	if args.player == 2:
+		play2Player()
+
 
 
 if __name__ == "__main__":
