@@ -1,7 +1,7 @@
 import utils
 
 
-class Gomoku():
+class GomokuAI():
 	def __init__(self):
 		self.boardMap = [[0 for _ in range(utils.BOARDSIZE)] for _ in range(utils.BOARDSIZE)]
 		self.depth = utils.DEPTH
@@ -31,13 +31,13 @@ class Gomoku():
 					case 1:
 						state = utils.AI
 					case -1:
-						state = utils.PLAYER
+						state = utils.PLAYER1
 					case _:
 						state = utils.EMPTY
 				print(f"{state}   ", end="")
 			print()
 		print()
-		print(f"Player: {utils.PLAYER}")
+		print(f"Player: {utils.PLAYER1}")
 		print(f"AI:     {utils.AI}")
 
 
@@ -61,3 +61,6 @@ class Gomoku():
 			[1, 1],
 			[1, 0]
 		]
+
+		# for direction in directions:
+
