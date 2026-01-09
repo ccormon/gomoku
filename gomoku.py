@@ -11,6 +11,11 @@ class Gomoku():
 		return self.boardMap
 
 
+	def placeAStone(self, isPlayer1, row, col):
+		if self.isPositionOK(row, col):
+			self.boardMap[row][col] = 1 if isPlayer1 else 2
+
+
 	def isPositionOK(self, row, col):
 		if row < 0 or row > 18 or col < 0 or row > 18:
 			return False
@@ -19,18 +24,43 @@ class Gomoku():
 		return True
 
 
-	def placeAStone(self, isAI, row, col):
-		if self.isPositionOK(row, col):
-			self.boardMap[row][col] = 1 if isAI else -1
-
-
 	def evaluate(self, row, col):
-		directions = [
-			[-1, 1],
-			[0, 1],
-			[1, 1],
-			[1, 0]
-		]
+		alignments = self.getAllDirectionsAlignments(row, col)
 
-		# for direction in directions:
 
+	def getAllDirectionsAlignments(self, row, col):
+		directions = [[-1, 1], [0, 1], [1, 1], [1, 0]]
+		alignments = []
+
+		for direction in directions:
+			alignment = []
+			for i in range(5):
+				tested_row = row + i * direction[0]
+				tested_col = col + i * direction[1]
+				if self.isPositionOK(tested_row, tested_col):
+					alignment.append(self.boardMap[tested_row][tested_col])
+			for i in range(5):
+				tested_row = row - i * direction[0]
+				tested_col = col - i * direction[1]
+				if self.isPositionOK(tested_row, tested_col):
+					alignment.append(self.boardMap[tested_row][tested_col])
+			alignments.append(alignment)
+
+		return alignments
+
+
+	def isWinningConfiguration(self, alignment, isPlayer1):
+		alignmentLen = alignment.size
+		winConfLen = utils.PLAYER1_WINCONF[0].size
+
+		if alignmentLen < winConfLen:
+			return False
+
+		winConf = utils.PLAYER1_WINCONF if isPlayer1 else utils.PLAYER2_WINCONF
+
+		for conf in winConf:
+			for i in range(alignmentLen - winConfLen + 1):
+				if alignment[i:i + winConfLen] == conf:
+					return True
+
+		return False
