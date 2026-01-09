@@ -28,9 +28,9 @@ def drawBoardInTerminal(boardMap, nbPlayer):
 					print(f"{i}      ", end="")
 			match boardMap[i][j]:
 				case 1:
-					state = utils.PLAYER2
-				case -1:
 					state = utils.PLAYER1
+				case 2:
+					state = utils.PLAYER2
 				case _:
 					state = utils.EMPTY
 			print(f"{state}   ", end="")
