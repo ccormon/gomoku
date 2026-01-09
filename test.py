@@ -1,8 +1,8 @@
-from gomokuAI import GomokuAI
+from gomoku import Gomoku
 
 
 def main():
-	test_board = GomokuAI()
+	test_board = Gomoku()
 	test_board.placeAStone(True, 8, 3)
 	test_board.placeAStone(False, 7, 2)
 	test_board.drawBoardInTerminal()
