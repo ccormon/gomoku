@@ -1,14 +1,20 @@
 from gomoku import Gomoku
 from gomokuCLI import *
+from utils import *
 
 
 def main():
-	test_board = Gomoku()
-	test_board.placeAStone(True, 8, 3)
-	test_board.placeAStone(False, 7, 2)
+	# test_board = Gomoku()
+	# test_board.placeAStone(True, 8, 3)
+	# test_board.placeAStone(False, 7, 2)
 	# drawBoardInTerminal(test_board.getBoard(), 1)
 	# print()
-	test_board.evaluate(True, 9, 4)
+	# test_board.evaluate(True, 9, 4)
+	pattern_dict_player1 = create_pattern_dict(True)
+	print(pattern_dict_player1)
+	print()
+	pattern_dict_player2 = create_pattern_dict(False)
+	print(pattern_dict_player2)
 
 
 if __name__ == "__main__":

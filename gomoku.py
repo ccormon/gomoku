@@ -11,18 +11,18 @@ class Gomoku():
 		return self.boardMap
 
 
-	def placeAStone(self, isPlayer1, row, col):
+	def placeAStone(self, isPlayer1: bool, row: int, col: int):
 		if self.isPositionOK(row, col):
 			self.boardMap[row][col] = 1 if isPlayer1 else 2
 
 
-	def isInBoard(self, row, col):
+	def isInBoard(self, row: int, col: int):
 		if row < 0 or row > 18 or col < 0 or row > 18:
 			return False
 		return True
 
 
-	def isPositionOK(self, row, col):
+	def isPositionOK(self, row: int, col: int):
 		if not self.isInBoard(row, col):
 			return False
 		if self.boardMap[row][col] != 0:
@@ -30,7 +30,7 @@ class Gomoku():
 		return True
 
 
-	def getAllDirectionsAlignments(self, row, col):
+	def getAllDirectionsAlignments(self, row: int, col: int):
 		directions = [[-1, 1], [0, 1], [1, 1], [1, 0]]
 		alignments = []
 
@@ -54,7 +54,7 @@ class Gomoku():
 		return alignments
 
 
-	def evaluate(self, isPlayer1, row, col):
+	def evaluate(self, isPlayer1: bool, row: int, col: int):
 		if not self.isPositionOK(row, col):
 			return 
 		self.boardMap[row][col] = 1 if isPlayer1 else 2
