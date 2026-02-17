@@ -28,19 +28,19 @@ def drawBoardInTerminal(boardMap, nbPlayer):
 					print(f"{i}      ", end="")
 			match boardMap[i][j]:
 				case 1:
-					state = utils.PLAYER1
+					state = 1
 				case 2:
-					state = utils.PLAYER2
+					state = 2
 				case _:
-					state = utils.EMPTY
+					state = 0
 			print(f"{state}   ", end="")
 		print()
 	print()
-	print(f"Player1: {utils.PLAYER1}")
+	print(f"Player1: {1}")
 	if nbPlayer == 1:
-		print(f"AI:      {utils.PLAYER2}")
+		print(f"AI:      {2}")
 	else:
-		print(f"Player2: {utils.PLAYER2}")
+		print(f"Player2: {2}")
 
 
 def play2Player():
@@ -52,7 +52,6 @@ def main():
 	args = parse_args()
 	if args.player == 2:
 		play2Player()
-
 
 
 if __name__ == "__main__":

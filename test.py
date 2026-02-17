@@ -4,44 +4,16 @@ from utils import *
 
 
 def main():
-	# test_board = Gomoku()
-	# test_board.placeAStone(True, 8, 3)
-	# test_board.placeAStone(False, 7, 2)
-	# drawBoardInTerminal(test_board.getBoard(), 1)
-	# print()
-	# test_board.evaluate(True, 9, 4)
-	pattern_dict_player1 = create_pattern_dict(True)
-	print(pattern_dict_player1)
+	test_board = Gomoku()
+	test_board.placeAStone(True, 8, 3)
+	test_board.placeAStone(True, 9, 3)
+	test_board.placeAStone(True, 10, 3)
+	test_board.placeAStone(False, 7, 2)
+	drawBoardInTerminal(test_board.getBoard(), 1)
 	print()
-	pattern_dict_player2 = create_pattern_dict(False)
-	print(pattern_dict_player2)
+	print(test_board.evaluate(True, 7, 3))
+
 
 
 if __name__ == "__main__":
 	main()
-
-
-#         0   1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  
-
-# 0       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 1       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 2       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 3       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 4       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 5       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 6       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 7       ·   ·   O   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 8       ·   ·   ·   X   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 9       ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 10      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 11      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 12      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 13      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 14      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 15      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 16      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 17      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-# 18      ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   ·   
-
-# Player1: X
-# AI:      O
