@@ -13,13 +13,8 @@ class Gomoku():
 		return self.boardMap
 
 
-	def placeAStone(self, isPlayer1: bool, row: int, col: int):
-		if self.isPositionOK(row, col):
-			self.boardMap[row][col] = 1 if isPlayer1 else 2
-
-
 	def isInBoard(self, row: int, col: int):
-		if row < 0 or row > 18 or col < 0 or row > 18:
+		if row < 0 or row > utils.BOARDSIZE - 1 or col < 0 or col > utils.BOARDSIZE - 1:
 			return False
 		return True
 
@@ -30,6 +25,16 @@ class Gomoku():
 		if self.boardMap[row][col] != 0:
 			return False
 		return True
+
+
+	def doMove(self, isPlayer1: bool, row: int, col: int):
+		if self.isPositionOK(row, col):
+			self.boardMap[row][col] = 1 if isPlayer1 else 2
+
+
+	def undoMove(self, row: int, col: int):
+		if self.isInBoard(row, col):
+			self.boardMap[row][col] = 0
 
 
 	def getAllDirectionsAlignments(self, row: int, col: int) -> list:
@@ -59,12 +64,7 @@ class Gomoku():
 
 
 	def evaluate(self, isPlayer1: bool, row: int, col: int):
-		if not self.isPositionOK(row, col):
-			return 
-
-		self.boardMap[row][col] = 1 if isPlayer1 else 2
 		alignments = self.getAllDirectionsAlignments(row, col)
-		self.boardMap[row][col] = 0
 
 		score = 0
 		pattern_dict_current = self.pattern_dict_player1 if isPlayer1 else self.pattern_dict_player2
@@ -78,20 +78,76 @@ class Gomoku():
 
 		return score
 
-	def minimax(self, isPlayer1: bool, node, depth: int, maximizingPlayer: bool) -> int:
+
+	def getPossibleMoves(self) -> list[tuple[int, int]]:
+		moves = []
+
+		for row in range(utils.BOARDSIZE):
+			for col in range(utils.BOARDSIZE):
+				if self.boardMap[row][col] != 0:
+					for i in range(-1, 2):
+						for j in range(-1, 2):
+							if self.isPositionOK(row + i, col + j):
+								moves.append((row + i, col + j))
+
+		return moves
+
+
+	def drawBoard(self):
+		print("        ", end="")
+		for i in range(utils.BOARDSIZE):
+			if i < 10:
+				print(f"{i}   ", end="")
+			else:
+				print(f"{i}  ", end="")
+		print()
+		print()
+
+		for i in range(utils.BOARDSIZE):
+			for j in range(utils.BOARDSIZE):
+				if j == 0:
+					if i < 10:
+						print(f"{i}       ", end="")
+					else:
+						print(f"{i}      ", end="")
+				match self.boardMap[i][j]:
+					case 1:
+						state = 1
+					case 2:
+						state = 2
+					case _:
+						state = 0
+				print(f"{state}   ", end="")
+			print()
+		print()
+
+
+	def minimax(self, isPlayer1: bool, lastMove: tuple, depth: int, maximizingPlayer: bool) -> int:
+		print(f"minimax called with lastMove: {lastMove}, depth: {depth}, maximizingPlayer: {maximizingPlayer}")
+		print()
+		# self.drawBoard()
 		if depth == 0: # or node is a terminal node then
-			return self.evaluate(isPlayer1, 0, 0) # TODO: change 0, 0 to the last move
+			print(f"Evaluating position for player {'1' if isPlayer1 else '2'} at move {lastMove} with depth 0")
+			print(f"Evaluation score: {self.evaluate(isPlayer1, lastMove[0], lastMove[1])}")
+			print()
+			return self.evaluate(isPlayer1, lastMove[0], lastMove[1])
+
 
 		if maximizingPlayer:
 			value = float('-inf')
-			# for each child of node do
-			# 	value = max(value, minimax(child, depth - 1, False))
-		else: # minimizing player
+			for move in self.getPossibleMoves():
+				self.doMove(isPlayer1, move[0], move[1])
+				value = max(value, self.minimax(isPlayer1, move, depth - 1, False))
+				self.undoMove(move[0], move[1])
+		else:
 			value = float('inf')
-			# for each child of node do
-			# 	value = min(value, minimax(child, depth - 1, True))
+			for move in self.getPossibleMoves():
+				self.doMove(not isPlayer1, move[0], move[1])
+				value = min(value, self.minimax(isPlayer1, move, depth - 1, True))
+				self.undoMove(move[0], move[1])
 
 		return value
+
 
 # function minimax(node, depth, maximizingPlayer) is
 # 	if depth = 0 or node is a terminal node then
