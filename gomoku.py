@@ -4,7 +4,6 @@ import utils
 class Gomoku():
 	def __init__(self):
 		self.boardMap = [[0 for _ in range(utils.BOARDSIZE)] for _ in range(utils.BOARDSIZE)]
-		self.depth = utils.DEPTH
 		self.pattern_dict_player1 = utils.create_pattern_dict(True)
 		self.pattern_dict_player2 = utils.create_pattern_dict(False)
 
@@ -93,45 +92,9 @@ class Gomoku():
 		return moves
 
 
-	def drawBoard(self):
-		print("        ", end="")
-		for i in range(utils.BOARDSIZE):
-			if i < 10:
-				print(f"{i}   ", end="")
-			else:
-				print(f"{i}  ", end="")
-		print()
-		print()
-
-		for i in range(utils.BOARDSIZE):
-			for j in range(utils.BOARDSIZE):
-				if j == 0:
-					if i < 10:
-						print(f"{i}       ", end="")
-					else:
-						print(f"{i}      ", end="")
-				match self.boardMap[i][j]:
-					case 1:
-						state = 1
-					case 2:
-						state = 2
-					case _:
-						state = 0
-				print(f"{state}   ", end="")
-			print()
-		print()
-
-
 	def minimax(self, isPlayer1: bool, lastMove: tuple, depth: int, maximizingPlayer: bool) -> int:
-		print(f"minimax called with lastMove: {lastMove}, depth: {depth}, maximizingPlayer: {maximizingPlayer}")
-		print()
-		# self.drawBoard()
 		if depth == 0: # or node is a terminal node then
-			print(f"Evaluating position for player {'1' if isPlayer1 else '2'} at move {lastMove} with depth 0")
-			print(f"Evaluation score: {self.evaluate(isPlayer1, lastMove[0], lastMove[1])}")
-			print()
 			return self.evaluate(isPlayer1, lastMove[0], lastMove[1])
-
 
 		if maximizingPlayer:
 			value = float('-inf')
@@ -148,6 +111,51 @@ class Gomoku():
 
 		return value
 
+
+	def findBestMove(self, isPlayer1: bool):
+		bestMove = None
+		bestValue = float('-inf')
+
+		for move in self.getPossibleMoves():
+			print(f"Testing move: {move}")
+			self.doMove(isPlayer1, move[0], move[1])
+			moveValue = self.minimax(isPlayer1, move, utils.DEPTH, True)
+			print(f"Move value: {moveValue}")
+			self.undoMove(move[0], move[1])
+			if moveValue > bestValue:
+				bestValue = moveValue
+				bestMove = move
+
+		return bestMove
+
+
+	# def drawBoard(self):
+	# 	print("        ", end="")
+	# 	for i in range(utils.BOARDSIZE):
+	# 		if i < 10:
+	# 			print(f"{i}   ", end="")
+	# 		else:
+	# 			print(f"{i}  ", end="")
+	# 	print()
+	# 	print()
+
+	# 	for i in range(utils.BOARDSIZE):
+	# 		for j in range(utils.BOARDSIZE):
+	# 			if j == 0:
+	# 				if i < 10:
+	# 					print(f"{i}       ", end="")
+	# 				else:
+	# 					print(f"{i}      ", end="")
+	# 			match self.boardMap[i][j]:
+	# 				case 1:
+	# 					state = 1
+	# 				case 2:
+	# 					state = 2
+	# 				case _:
+	# 					state = 0
+	# 			print(f"{state}   ", end="")
+	# 		print()
+	# 	print()
 
 # function minimax(node, depth, maximizingPlayer) is
 # 	if depth = 0 or node is a terminal node then

@@ -11,7 +11,7 @@ def main():
 	test_board.doMove(False, 4, 2)
 	drawBoardInTerminal(test_board.getBoard(), 1)
 	print()
-	print(test_board.minimax(True, (4, 3), 3, True))
+	print(test_board.findBestMove(True))
 
 
 
