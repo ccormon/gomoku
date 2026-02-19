@@ -5,13 +5,13 @@ from utils import *
 
 def main():
 	test_board = Gomoku()
-	test_board.placeAStone(True, 8, 3)
-	test_board.placeAStone(True, 9, 3)
-	test_board.placeAStone(True, 10, 3)
-	test_board.placeAStone(False, 7, 2)
+	test_board.doMove(True, 5, 3)
+	test_board.doMove(True, 6, 3)
+	test_board.doMove(True, 7, 3)
+	test_board.doMove(False, 4, 2)
 	drawBoardInTerminal(test_board.getBoard(), 1)
 	print()
-	print(test_board.evaluate(True, 7, 3))
+	print(test_board.minimax(True, (4, 3), 3, True))
 
 
 
