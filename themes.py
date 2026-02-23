@@ -1,7 +1,7 @@
 THEMES = {
     "classic": {
         "colors": {
-            "grid": (200, 200, 200),
+            "accent": (200, 200, 200),
             "text": (255, 200, 100),
         },
         "images": {
@@ -18,7 +18,7 @@ THEMES = {
 
     "crystal": {
         "colors": {
-            "grid": (255, 255, 255),
+            "accent": (255, 255, 255),
             "text": (255, 255, 255),
         },
         "images": {
@@ -35,7 +35,7 @@ THEMES = {
 
     "bakery": {
         "colors": {
-            "grid": (210, 180, 140),
+            "accent": (210, 180, 140),
             "text": (255, 255, 255),
         },
         "images": {
@@ -52,7 +52,7 @@ THEMES = {
 
     "rat": {
         "colors": {
-            "grid": (34, 139, 34),
+            "accent": (34, 139, 34),
             "text": (255, 255, 255),
         },
         "images": {

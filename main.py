@@ -2,8 +2,8 @@ import pygame as pg
 from pygame.locals import *
 import math
 
-from Game import Game, GameMode
 from Window import Window, DisplayedWindow
+from Game import Game, GameMode
 
 
 def eventHandler(window):
@@ -18,6 +18,8 @@ def eventHandler(window):
                 window.updateGameScene(event)
             case DisplayedWindow.SETTINGS:
                 window.updateSettingsMenu(event)
+            case DisplayedWindow.GAME_OVER:
+                window.updateGameOver(event)
     return True
 
 

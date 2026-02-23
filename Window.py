@@ -2,22 +2,26 @@ import pygame as pg
 from pygame.locals import *
 from enum import Enum
 
+
 class DisplayedWindow(Enum):
     MAIN_MENU = 1
     GAME_SCENE = 2
     SETTINGS = 3
+    GAME_OVER = 4
 
+
+from Game import Game
 import themes
 from ThemeManager import ThemeManager
 from Button import Button, ToggleButton
 from ButtonClickHandler import ButtonClickHandler
 from MusicPlayer import MusicPlayer
+from SoundEffects import SoundEffects
 from PlayerIcon import PlayerIcon
 from Position import Position, PositionUnit, PositionReference
-from SoundEffects import SoundEffects
 from assets import Assets
 from Board import Board
-from Game import Game
+from Overlay import Overlay
 
 
 class Window:
@@ -30,8 +34,9 @@ class Window:
 
         self.soundEffects = SoundEffects()
         self.musicPlayer = MusicPlayer()
-        self.themeManager = ThemeManager(themes.THEMES, self, default="classic")
+        self.themeManager = ThemeManager(themes.THEMES, self, default="crystal")
         self.board = Board()
+        self.overlay = Overlay(color=self.themeManager.getAccentColor())
 
         self.player1Icon = PlayerIcon(self.themeManager, self.game, (self.size[0] // 2 - 300, 30), (100, 100), 1)
         self.player2Icon = PlayerIcon(self.themeManager, self.game, (self.size[0] // 2 + 200, 30), (100, 100), 2)
@@ -75,6 +80,7 @@ class Window:
     def _drawMainMenu(self):
         self._drawBackground()
 
+        # TODO: put text rendering in a separate method or a separate class
         font = pg.font.SysFont(self.themeManager.fontName, 90)
         title = font.render("Gomoku", True, (255, 255, 255))
         self.display.blit(title, (self.size[0] // 2 - title.get_width() // 2, 100))
@@ -87,8 +93,6 @@ class Window:
 
         self.exitButton.draw(self.display)
         self.settingButton.draw(self.display)
-
-        pg.display.flip()
 
 
     def _drawGameScene(self):
@@ -105,8 +109,6 @@ class Window:
         font = pg.font.SysFont(self.themeManager.fontName, 90)
         score = font.render(f"{self.game.currentScore[1]} | {self.game.currentScore[2]}", True, (255, 255, 255))
         self.display.blit(score, (self.size[0] // 2 - score.get_width() // 2, 30))
-
-        pg.display.flip()
 
 
     def _drawSettingsMenu(self):
@@ -127,7 +129,10 @@ class Window:
         self.theme3Button.draw(self.display)
         self.theme4Button.draw(self.display)
 
-        pg.display.flip()
+
+    def _drawGameOverScreen(self):
+        self._drawGameScene()
+        self.overlay.draw(self.display, self.game)
 
 
 # Public methods
@@ -139,6 +144,9 @@ class Window:
                 self._drawGameScene()
             case DisplayedWindow.SETTINGS:
                 self._drawSettingsMenu()
+            case DisplayedWindow.GAME_OVER:
+                self._drawGameOverScreen()
+        pg.display.flip()
 
 
     # Update methods for each window, called from event handler
@@ -163,4 +171,9 @@ class Window:
         self.theme3Button.update(event)
         self.theme4Button.update(event)
         self.settingButton.update(event)
+        self.exitButton.update(event)
+
+
+    def updateGameOver(self, event: pg.event.Event):
+        self.homeButton.update(event)
         self.exitButton.update(event)

@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.locals import *
 
-# TODO: where to add the timer logic ?
+# TODO: is it useful ? for now it's just a list
 
 class GameHistory:
     def __init__(self):

@@ -36,8 +36,8 @@ class ThemeManager:
         return self._images.get("background")
 
 
-    def getBoardColor(self):
-        return self.current["colors"]["grid"]
+    def getAccentColor(self):
+        return self.current["colors"]["accent"]
 
 
     def setTheme(self, name: str):

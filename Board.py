@@ -107,7 +107,7 @@ class Board:
 
 
     def draw(self, window):
-        self.color = window.themeManager.getBoardColor()
+        self.color = window.themeManager.getAccentColor()
 
         self._drawGrid(window, self.color, self.lineWidth)
         self._drawStarPoints(window, self.color, self.circleRadius)
