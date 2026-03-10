@@ -22,7 +22,7 @@ class Game:
         self.winner = 0
 
         self.boardState = [[0 for _ in range(BoardParam.NUM_CASE)] for _ in range(BoardParam.NUM_CASE)] # 0: empty, 1: player1 piece, 2: player2 piece
-        self.stonesLocation = []            # list of tuple for each piece on the board: (row, col)
+        self.stonesLocations = []           # list of tuple for each piece on the board: (row, col)
         self.moveHistory = []               # list of (player, row, col) tuples for each move
         self.timerHistory = []              # list of (player, time) tuples for each move
         self.timer = Timer()
@@ -72,7 +72,7 @@ class Game:
 
     def _placePiece(self, row: int, col: int):
         self.boardState[row][col] = self.activePlayer
-        self.stonesLocation.append((row, col))
+        self.stonesLocations.append((row, col))
 
 
     def _handleCapture(self, row: int, col: int):
@@ -93,7 +93,7 @@ class Game:
                 self.currentScore[self.activePlayer] += 2
 
                 # remove captured pieces from stonesLocation
-                self.stonesLocation = [(r, c) for (r, c) in self.stonesLocation if (r, c) != (r1, c1) and (r, c) != (r2, c2)]
+                self.stonesLocations = [(r, c) for (r, c) in self.stonesLocations if (r, c) != (r1, c1) and (r, c) != (r2, c2)]
 
 
     def _checkValidMove(self, row: int, col: int):
@@ -138,7 +138,7 @@ class Game:
         self.mode = gameMode
         self.currentScore = {1: 0, 2: 0}
         self.boardState = [[0 for _ in range(BoardParam.NUM_CASE)] for _ in range(BoardParam.NUM_CASE)]
-        self.stonesLocation = []
+        self.stonesLocations = []
         self.moveHistory = []
         self.timerHistory = []
         self.hoverCell = None
