@@ -133,6 +133,7 @@ class Window:
     def _drawGameOverScreen(self):
         self._drawGameScene()
         self.overlay.draw(self.display, self.game)
+        #self.historyButton.draw(self.display)
 
 
 # Public methods
@@ -177,3 +178,4 @@ class Window:
     def updateGameOver(self, event: pg.event.Event):
         self.homeButton.update(event)
         self.exitButton.update(event)
+        #self.historyButton.update(event)

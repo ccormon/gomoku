@@ -26,6 +26,7 @@ class Game:
         self.timerHistory = []              # list of (player, time) tuples for each move
         self.timer = Timer()
         self.gomokuAI = GomokuAI()
+        self.isActive = True
 
 
     def _checkFiveInARow(self, row: int, col: int):
@@ -90,7 +91,7 @@ class Game:
 
 
     def _checkValidMove(self, row: int, col: int):
-        # TODO: check if the move is valid (not placing on an occupied space, not violating opening rules, ...)
+        # TODO: check if the move is valid (not placing on an occupied space, not violating opening rules, ...)8
         if self.boardState[row][col] != 0:
             return False
         return True
@@ -105,6 +106,7 @@ class Game:
         player2Times = [time for player, time in self.timerHistory if player == 2]
         print(f"Average Time per Move: Player 1: {sum(player1Times)/len(player1Times) if player1Times else 0:.2f} seconds, Player 2: {sum(player2Times)/len(player2Times) if player2Times else 0:.2f} seconds")
         '''
+        self.isActive = False
         window.displayedWindow = DisplayedWindow.GAME_OVER
 
 
@@ -136,9 +138,10 @@ class Game:
         if self.mode == GameMode.PVE and self.activePlayer == 2:
             # TODO: maybe start AI timer here if too slow
             AIMove = self.gomokuAI.findBestMove(self, False)
-            self._handleMove(AIMove[0], AIMove[1])
+            self._handleMove(AIMove[0], AIMove[1], window)
 
         if event.type == MOUSEBUTTONDOWN:
             gameMove = window.board.getIndexFromPos(window, event.pos)
             if gameMove[0] is not None and gameMove[1] is not None:
                 self._handleMove(gameMove[0], gameMove[1], window)
+            

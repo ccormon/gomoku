@@ -19,7 +19,7 @@ class PlayerIcon:
 
 
     def draw(self, surface: pg.Surface):
-        if self.game.activePlayer == self.playerId:
+        if self.game.activePlayer == self.playerId and self.game.isActive:
             self.animate(surface)
             surface.blit(self.image(), self.position)
         else: 
