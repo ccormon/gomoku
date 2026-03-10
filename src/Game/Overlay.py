@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.locals import *
 
-from ThemeManager import ThemeManager
+from src.Game.ThemeManager import ThemeManager
 
 class Overlay:
     def __init__(self, size=(1600, 600), color=(255, 255, 255), alpha=160):

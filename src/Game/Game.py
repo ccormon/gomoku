@@ -8,10 +8,10 @@ class GameMode(Enum):
     PVE = 2
 
 
-from Window import DisplayedWindow
-from Board import BoardParam
-from GomokuAI import GomokuAI
-from Timer import Timer
+from src.Game.Window import DisplayedWindow
+from src.Game.Board import BoardParam
+from src.AI.GomokuAI import GomokuAI
+from src.Game.Timer import Timer
 
 
 class Game:
@@ -126,6 +126,7 @@ class Game:
 
 # Public methods
     def init(self, gameMode: GameMode):
+        self.isActive = True
         self.activePlayer = 1
         self.mode = gameMode
         self.currentScore = {1: 0, 2: 0}

@@ -1,7 +1,7 @@
 import pygame as pg
 from pygame.locals import *
 
-from Position import Position
+from src.Game.Position import Position
 
 
 def createHoverImage(image: pg.Surface, factor: float):

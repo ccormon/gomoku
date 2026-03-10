@@ -1,6 +1,6 @@
 import utils
 import argparse
-from gomoku import Gomoku
+from src.AI.GomokuAI import GomokuAI
 
 
 def parse_args():

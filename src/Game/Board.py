@@ -1,8 +1,8 @@
 import pygame as pg
 from pygame.locals import *
 
-from ThemeManager import ThemeManager
-from Position import Position, PositionUnit, PositionReference
+from src.Game.ThemeManager import ThemeManager
+from src.Game.Position import Position, PositionUnit, PositionReference
 
 
 class BoardParam:

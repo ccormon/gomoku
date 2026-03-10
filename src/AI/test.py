@@ -1,4 +1,4 @@
-from gomoku import Gomoku
+from GomokuAI import GomokuAI
 from gomokuCLI import *
 from utils import *
 

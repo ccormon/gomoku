@@ -1,8 +1,8 @@
 import pygame as pg
 from pygame.locals import *
 
-from MusicPlayer import MusicPlayer
-from Game import GameMode
+from src.Game.MusicPlayer import MusicPlayer
+from src.Game.Game import GameMode
 
 
 class ThemeManager:

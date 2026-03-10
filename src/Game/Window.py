@@ -10,18 +10,18 @@ class DisplayedWindow(Enum):
     GAME_OVER = 4
 
 
-from Game import Game
-import themes
-from ThemeManager import ThemeManager
-from Button import Button, ToggleButton
-from ButtonClickHandler import ButtonClickHandler
-from MusicPlayer import MusicPlayer
-from SoundEffects import SoundEffects
-from PlayerIcon import PlayerIcon
-from Position import Position, PositionUnit, PositionReference
-from assets import Assets
-from Board import Board
-from Overlay import Overlay
+from src.Game.Game import Game
+import src.Game.themes as themes
+from src.Game.ThemeManager import ThemeManager
+from src.Game.Button import Button, ToggleButton
+from src.Game.ButtonClickHandler import ButtonClickHandler
+from src.Game.MusicPlayer import MusicPlayer
+from src.Game.SoundEffects import SoundEffects
+from src.Game.PlayerIcon import PlayerIcon
+from src.Game.Position import Position, PositionUnit, PositionReference
+from src.Game.assets import Assets
+from src.Game.Board import Board
+from src.Game.Overlay import Overlay
 
 
 class Window:

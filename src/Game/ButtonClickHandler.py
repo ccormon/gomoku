@@ -1,11 +1,11 @@
 import pygame as pg
 from pygame.locals import *
 
-from Game import Game, GameMode
-from Window import DisplayedWindow
-from Button import Button, ToggleButton
-import themes
-from ThemeManager import ThemeManager
+from src.Game.Game import Game, GameMode
+from src.Game.Window import DisplayedWindow
+from src.Game.Button import Button, ToggleButton
+import src.Game.themes
+from src.Game.ThemeManager import ThemeManager
 
 
 class ButtonClickHandler:

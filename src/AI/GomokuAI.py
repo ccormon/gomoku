@@ -1,5 +1,6 @@
-import utils
-from Game import BoardParam
+import src.AI.utils as utils
+from src.Game.Game import BoardParam
+
 
 class GomokuAI():
 	def __init__(self):

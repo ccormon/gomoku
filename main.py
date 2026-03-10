@@ -2,8 +2,8 @@ import pygame as pg
 from pygame.locals import *
 import math
 
-from Window import Window, DisplayedWindow
-from Game import Game, GameMode
+from src.Game.Window import Window, DisplayedWindow
+from src.Game.Game import Game, GameMode
 
 
 def eventHandler(window):
