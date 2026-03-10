@@ -20,6 +20,7 @@ class Board:
         self.color = (0, 0, 0)
         self.lineWidth = 2
         self.circleRadius = 7
+        self.hoverAlpha = 120
 
 
     def _boardOrigin(self, window):
@@ -106,9 +107,33 @@ class Board:
                     window.display.blit(pieceImage, piecePos)
 
 
+    def _drawHoverPiece(self, window):
+        game = window.game
+        hoverCell = game.hoverCell
+
+        if hoverCell is None:
+            return
+
+        # if player is AI don't show hover piece
+        if game.mode is not None and game.mode.name == "PVE" and game.activePlayer == 2:
+            return
+
+        row, col = hoverCell
+        if game.boardState[row][col] != 0:
+            return
+
+        pieceImage = window.themeManager.getPiecesImage(game.activePlayer).copy()
+        pieceImage.set_alpha(self.hoverAlpha)
+
+        pos = self._getPosFromIndex(row, col, window)
+        piecePos = Position.convert(pos, pieceImage.get_size(), PositionReference.CENTER)
+        window.display.blit(pieceImage, piecePos)
+
+
     def draw(self, window):
         self.color = window.themeManager.getAccentColor()
 
         self._drawGrid(window, self.color, self.lineWidth)
         self._drawStarPoints(window, self.color, self.circleRadius)
+        self._drawHoverPiece(window)
         self._drawPieces(window)
