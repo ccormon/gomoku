@@ -80,36 +80,55 @@ class GomokuAI():
 		return score
 
 
+	# def getPossibleMoves(self) -> list[tuple[int, int]]:
+	# 	moves = []
+
+	# 	for row in range(self.numCase):
+	# 		for col in range(self.numCase):
+	# 			if self.boardMap[row][col] != 0:
+	# 				for i in range(-1, 2):
+	# 					for j in range(-1, 2):
+	# 						if self.isPositionOK(row + i, col + j):
+	# 							moves.append((row + i, col + j))
+
+	# 	return moves
+
+
 	def getPossibleMoves(self) -> list[tuple[int, int]]:
-		moves = []
+		moves = set()
 
-		for row in range(self.numCase):
-			for col in range(self.numCase):
-				if self.boardMap[row][col] != 0:
-					for i in range(-1, 2):
-						for j in range(-1, 2):
-							if self.isPositionOK(row + i, col + j):
-								moves.append((row + i, col + j))
+		for row, col in self.playedMoves:
+			for i in range(-1, 2):
+				for j in range(-1, 2):
+					r, c = row + i, col + j
+					if self.isPositionOK(r, c):
+						moves.add((r, c))
 
-		return moves
+		return list(moves)
 
 
-	def minimax(self, isPlayer1: bool, lastMove: tuple, depth: int, maximizingPlayer: bool) -> int:
-		if depth == 0: # or node is a terminal node then
+	def minimax(self, isPlayer1: bool, lastMove: tuple, depth: int, alpha: int, beta: int, maximizingPlayer: bool) -> int:
+		if depth == 0:
 			return self.evaluate(isPlayer1, lastMove[0], lastMove[1])
 
 		if maximizingPlayer:
 			value = float('-inf')
 			for move in self.getPossibleMoves():
 				self.doMove(isPlayer1, move[0], move[1])
-				value = max(value, self.minimax(isPlayer1, move, depth - 1, False))
+				value = max(value, self.minimax(isPlayer1, move, depth - 1, alpha, beta, False))
 				self.undoMove(move[0], move[1])
+				if value >= beta:
+					return value
+				alpha = max(alpha, value)
 		else:
 			value = float('inf')
 			for move in self.getPossibleMoves():
 				self.doMove(not isPlayer1, move[0], move[1])
-				value = min(value, self.minimax(isPlayer1, move, depth - 1, True))
+				value = min(value, self.minimax(isPlayer1, move, depth - 1, alpha, beta, True))
 				self.undoMove(move[0], move[1])
+				if alpha >= value:
+					return value
+				beta = min(beta, value)
 
 		return value
 
@@ -122,7 +141,7 @@ class GomokuAI():
 		for move in self.getPossibleMoves():
 			print(f"Testing move: {move}")
 			self.doMove(isPlayer1, move[0], move[1])
-			moveValue = self.minimax(isPlayer1, move, utils.DEPTH, True)
+			moveValue = self.minimax(isPlayer1, move, utils.DEPTH, float('-inf'), float('inf'), True)
 			print(f"Move value: {moveValue}")
 			self.undoMove(move[0], move[1])
 			if moveValue > bestValue:
