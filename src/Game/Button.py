@@ -21,10 +21,11 @@ class Button:
         self.onHover = False
         self.unloadOnClick = unloadOnClick
         self.imageHover = createHoverImage(self.image, 1.1)
+        self.active = True
 
 
     def draw(self, surface: pg.Surface):
-        if self.onHover:
+        if self.onHover and self.active:
             surface.blit(self.imageHover, self.position.get(self.imageHover.get_size()))
         else:
             surface.blit(self.image, self.position.get(self.image.get_size()))

@@ -59,7 +59,7 @@ class Window:
         self.exitButton = Button(Assets.EXIT, Position(self, (96, 5)), buttonClick.exitButtonClick)
         self.settingButton = Button(Assets.SETTINGS, Position(self, (92, 5)), buttonClick.settingButtonClick)
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
-        self.scoreButton = Button(Assets.SCORE, Position(self, (50, 75)), buttonClick.scoreButtonClick)
+        self.scoreButton = Button(Assets.SCORE, Position(self, (71, 69.5)), buttonClick.scoreButtonClick)
 
         self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (50, 50)), True, buttonClick.musicButtonClick)
         self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (50, 60)), True, buttonClick.soundButtonClick)

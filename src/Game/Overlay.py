@@ -39,14 +39,18 @@ class Overlay:
         title = font_large.render(f"Victoire du Joueur {game.winner} !", True, text_color)
         self.text_surface.blit(title, Position(canvas, (50, 25)).get(title.get_size()))
 
-        font_small = pg.font.SysFont(font_name, 45)
+        font_medium = pg.font.SysFont(font_name, 45)
         lines = [
-            (font_small.render("Temps moyen pour jouer :", True, text_color), 40),
-            (font_small.render(f"Joueur 1: {round(game.timerHistory[0][1], 2)}s", True, text_color), 50),
-            (font_small.render(f"Joueur 2: {round(game.timerHistory[1][1], 2)}s", True, text_color), 60),
+            (font_medium.render("Temps moyen pour jouer :", True, text_color), 40),
+            (font_medium.render(f"Joueur 1: {round(game.timerHistory[0][1], 2)}s", True, text_color), 50),
+            (font_medium.render(f"Joueur 2: {round(game.timerHistory[1][1], 2)}s", True, text_color), 60),
         ]
         for surface, y_pct in lines:
             self.text_surface.blit(surface, Position(canvas, (50, y_pct)).get(surface.get_size()))
+
+        font_small = pg.font.SysFont(font_name, 30)
+        line = font_small.render(f"Récupérer le score et les métriques de la partie :", True, text_color)
+        self.text_surface.blit(line, Position(canvas, (47, 80)).get(line.get_size()))
 
         display.blit(self.bg_surface, (0, 150))
         display.blit(self.text_surface, (0, 150))
