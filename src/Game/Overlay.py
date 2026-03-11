@@ -15,6 +15,7 @@ class Overlay:
 
     def draw(self, display, game):
         # TODO: Refactor this to use ThemeManager for font and colors + make it look nicer
+        # TODO: check when another game is launched
         font = pg.font.SysFont("Arial", 70)
         message = font.render(f"Victoire du Joueur {game.winner} !", True, (0, 0, 0))
         self.surface.blit(message, (self.size[0] // 2 - message.get_width() // 2, self.size[1] // 2 - message.get_height() // 2))
@@ -22,7 +23,7 @@ class Overlay:
         message = font.render(f"Temps moyen pour jouer :", True, (0, 0, 0))
         message2 = font.render(f"Joueur 1: {round(game.timerHistory[0][1], 2)}s", True, (0, 0, 0))
         message3 = font.render(f"Joueur 2: {round(game.timerHistory[1][1], 2)}s", True, (0, 0, 0))
-        self.surface.blit(message, (self.size[0] // 2 - message.get_width() // 2, self.size[1] // 2 + 40))
-        self.surface.blit(message2, (self.size[0] // 2 - message2.get_width() // 2, self.size[1] // 2 + 70))
-        self.surface.blit(message3, (self.size[0] // 2 - message3.get_width() // 2, self.size[1] // 2 + 100))
+        self.surface.blit(message, (self.size[0] // 2 - message.get_width() // 2, self.size[1] // 2 - message.get_height() // 2 + 80))
+        self.surface.blit(message2, (self.size[0] // 2 - message2.get_width() // 2, self.size[1] // 2 - message2.get_height() // 2 + 140))
+        self.surface.blit(message3, (self.size[0] // 2 - message3.get_width() // 2, self.size[1] // 2 - message3.get_height() // 2 + 200))
         display.blit(self.surface, (0, 150))
