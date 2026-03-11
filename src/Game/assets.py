@@ -9,6 +9,8 @@ class Assets:
     #SETTINGS_PRESSED = "assets/image/icon_settings_pressed.png"
     HOME = "assets/image/icon_home.png"
     #HOME_PRESSED = "assets/image/icon_home_pressed.png"
+    SCORE = "assets/image/icon_score.png"
+    #SCORE_PRESSED = "assets/image/icon_score_pressed.png"
 
     MUSIC_ON = "assets/image/icon_music_on.png"
     #MUSIC_ON_PRESSED = "assets/image/icon_music_on_pressed.png"

@@ -27,6 +27,19 @@ class ButtonClickHandler:
         exit()
 
 
+    def scoreButtonClick(self, button: Button):
+        self.soundEffects.play_sound("pop")
+        # download a file with the score and metrics of the game
+        with open("score.txt", "w") as f:
+            f.write(f"Score final : Joueur 1: {self.game.currentScore[1]} - Joueur 2: {self.game.currentScore[2]}\n")
+            f.write(f"Temps moyen pour jouer : Joueur 1: {round(self.game.timerHistory[0][1], 2)}s, Joueur 2: {round(self.game.timerHistory[1][1], 2)}s\n")
+            f.write("Historique des coups :\n")
+            for i, move in enumerate(self.game.moveHistory):
+                player, row, col = move
+                time = self.game.timerHistory[i][1]
+                f.write(f"Joueur {player} a joué en ({row}, {col}) après {round(time, 2)}s\n")
+
+
     def musicButtonClick(self, button: ToggleButton):
         self.soundEffects.play_sound("pop")
         if button.active:

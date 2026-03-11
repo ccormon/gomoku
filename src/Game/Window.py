@@ -36,7 +36,7 @@ class Window:
         self.musicPlayer = MusicPlayer()
         self.themeManager = ThemeManager(themes.THEMES, self, default="crystal")
         self.board = Board()
-        self.overlay = Overlay(color=self.themeManager.getAccentColor())
+        self.overlay = Overlay(self.themeManager)
 
         self.player1Icon = PlayerIcon(self.themeManager, self.game, (self.size[0] // 2 - 300, 30), (100, 100), 1)
         self.player2Icon = PlayerIcon(self.themeManager, self.game, (self.size[0] // 2 + 200, 30), (100, 100), 2)
@@ -59,6 +59,7 @@ class Window:
         self.exitButton = Button(Assets.EXIT, Position(self, (96, 5)), buttonClick.exitButtonClick)
         self.settingButton = Button(Assets.SETTINGS, Position(self, (92, 5)), buttonClick.settingButtonClick)
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
+        self.scoreButton = Button(Assets.SCORE, Position(self, (50, 75)), buttonClick.scoreButtonClick)
 
         self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (50, 50)), True, buttonClick.musicButtonClick)
         self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (50, 60)), True, buttonClick.soundButtonClick)
@@ -133,7 +134,7 @@ class Window:
     def _drawGameOverScreen(self):
         self._drawGameScene()
         self.overlay.draw(self.display, self.game)
-        #self.historyButton.draw(self.display)
+        self.scoreButton.draw(self.display)
 
 
 # Public methods
@@ -178,4 +179,4 @@ class Window:
     def updateGameOver(self, event: pg.event.Event):
         self.homeButton.update(event)
         self.exitButton.update(event)
-        #self.historyButton.update(event)
+        self.scoreButton.update(event)

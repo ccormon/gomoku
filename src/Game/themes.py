@@ -13,13 +13,13 @@ THEMES = {
             "background": "assets/classic/background.jpg",
         },
         "music": "assets/sound/background_music.mp3",
-        "font": "Arial"
+        "font": "urwgothic"
     },
 
     "crystal": {
         "colors": {
             "accent": (255, 255, 255),
-            "text": (255, 255, 255),
+            "text": (0, 0, 0),
         },
         "images": {
             "stone_player1": "assets/crystal/black.png",
@@ -30,13 +30,13 @@ THEMES = {
             "background": "assets/crystal/background.png",
         },
         "music": "assets/sound/background_music.mp3",
-        "font": "Arial"
+        "font": "urwgothic"
     },
 
     "bakery": {
         "colors": {
             "accent": (210, 180, 140),
-            "text": (255, 255, 255),
+            "text": (0, 0, 0),
         },
         "images": {
             "stone_player1": "assets/bakery/black.png",
@@ -47,7 +47,7 @@ THEMES = {
             "background": "assets/bakery/background.png",
         },
         "music": "assets/sound/background_music.mp3",
-        "font": "Arial"
+        "font": "urwgothic"
     },
 
     "rat": {
@@ -64,6 +64,6 @@ THEMES = {
             "background": "assets/rat/background.png",
         },
         "music": "assets/sound/background_music.mp3",
-        "font": "Arial"
+        "font": "urwgothic"
     }
 }
