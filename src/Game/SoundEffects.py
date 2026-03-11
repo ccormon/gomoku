@@ -14,5 +14,11 @@ class SoundEffects:
             self.sounds[name].play()
 
 
+    def set_volume(self, volume: float):
+        volume = max(0.0, min(1.0, volume))
+        for sound in self.sounds.values():
+            sound.set_volume(volume)
+
+
     def toggle(self):
         self.active = not self.active
