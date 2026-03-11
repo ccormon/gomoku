@@ -11,7 +11,7 @@ def createHoverImage(image: pg.Surface, factor: float):
 
 
 class Button:
-    def __init__(self, image_path: str, position: Position, callBack: callable, unloadOnClick: bool=True):
+    def __init__(self, image_path: str, position: Position, callBack: callable, unloadOnClick: bool=True, hoverFactor: float=1.1):
         self.image = pg.image.load(image_path).convert_alpha()
         self.size = self.image.get_size()
         self.position = position
@@ -20,7 +20,7 @@ class Button:
         self.callback = callBack
         self.onHover = False
         self.unloadOnClick = unloadOnClick
-        self.imageHover = createHoverImage(self.image, 1.1)
+        self.imageHover = createHoverImage(self.image, hoverFactor)
         self.active = True
 
 

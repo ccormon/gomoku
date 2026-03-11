@@ -70,8 +70,8 @@ class Window:
         self.soundVolumeSlider = Slider(self, (52, 45), 25, 1.0,
                                         lambda v: self.soundEffects.set_volume(v))
         
-        self.pvpButton = Button(Assets.PVP, Position(self, (33, 50)), buttonClick.pvpButtonClick)
-        self.pveButton = Button(Assets.PVE, Position(self, (66, 50)), buttonClick.pveButtonClick)
+        self.pvpButton = Button(Assets.PVP, Position(self, (37, 57)), buttonClick.pvpButtonClick, hoverFactor=1.05)
+        self.pveButton = Button(Assets.PVE, Position(self, (63, 57)), buttonClick.pveButtonClick, hoverFactor=1.05)
 
         self.theme1Button = Button(Assets.THEME1, Position(self, (37, 67)), buttonClick.theme1ButtonClick, False)
         self.theme2Button = Button(Assets.THEME2, Position(self, (67, 67)), buttonClick.theme2ButtonClick, False)
@@ -90,10 +90,11 @@ class Window:
         # TODO: put text rendering in a separate method or a separate class
         font = pg.font.SysFont(self.themeManager.fontName, 90)
         title = font.render("Gomoku", True, (255, 255, 255))
-        self.display.blit(title, (self.size[0] // 2 - title.get_width() // 2, 100))
+        self.display.blit(title, Position(self, (50, 17)).get((title.get_width(), 0)))
+        
         font = pg.font.SysFont(self.themeManager.fontName, 50)
-        selectModeText = font.render("Select Game Mode:", True, (255, 255, 255))
-        self.display.blit(selectModeText, (self.size[0] // 2 - selectModeText.get_width() // 2, 300))
+        selectModeText = font.render("Sélectionnez un mode de jeu :", True, (255, 255, 255))
+        self.display.blit(selectModeText, Position(self, (50, 37)).get((selectModeText.get_width(), 0)))
 
         self.pvpButton.draw(self.display)
         self.pveButton.draw(self.display)
@@ -115,7 +116,7 @@ class Window:
         # print scores
         font = pg.font.SysFont(self.themeManager.fontName, 90)
         score = font.render(f"{self.game.currentScore[1]} | {self.game.currentScore[2]}", True, (255, 255, 255))
-        self.display.blit(score, (self.size[0] // 2 - score.get_width() // 2, 30))
+        self.display.blit(score, Position(self, (50, 3)).get((score.get_width(), 0)))
 
 
     def _drawSettingsMenu(self):
@@ -123,7 +124,7 @@ class Window:
 
         title_font = pg.font.SysFont(self.themeManager.fontName, 100)
         title = title_font.render("Options", True, (255, 255, 255))
-        self.display.blit(title, (self.size[0] // 2 - title.get_width() // 2, 100))
+        self.display.blit(title, Position(self, (50, 11)).get((title.get_width(), 0)))
 
         label_font = pg.font.SysFont(self.themeManager.fontName, 40)
 
