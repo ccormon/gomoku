@@ -62,12 +62,12 @@ class Window:
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
         self.scoreButton = Button(Assets.SCORE, Position(self, (71, 69.5)), buttonClick.scoreButtonClick)
 
-        self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (32, 48)), True, buttonClick.musicButtonClick)
-        self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (32, 62)), True, buttonClick.soundButtonClick)
+        self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (37, 35)), True, buttonClick.musicButtonClick)
+        self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (37, 45)), True, buttonClick.soundButtonClick)
 
-        self.musicVolumeSlider = Slider(self, (62, 48), 25, 1.0,
+        self.musicVolumeSlider = Slider(self, (52, 35), 25, 1.0,
                                         lambda v: self.musicPlayer.set_volume(v))
-        self.soundVolumeSlider = Slider(self, (62, 62), 25, 1.0,
+        self.soundVolumeSlider = Slider(self, (52, 45), 25, 1.0,
                                         lambda v: self.soundEffects.set_volume(v))
         
         self.pvpButton = Button(Assets.PVP, Position(self, (33, 50)), buttonClick.pvpButtonClick)
@@ -122,29 +122,29 @@ class Window:
         self._drawBackground()
 
         title_font = pg.font.SysFont(self.themeManager.fontName, 100)
-        title = title_font.render("Settings", True, (255, 255, 255))
+        title = title_font.render("Options", True, (255, 255, 255))
         self.display.blit(title, (self.size[0] // 2 - title.get_width() // 2, 100))
 
         label_font = pg.font.SysFont(self.themeManager.fontName, 40)
 
         # TODO: put music/sound settings in a separate method
         # --- Music row ---
-        music_label = label_font.render("Music", True, (255, 255, 255))
-        music_label_y = int(self.size[1] * 0.48) - music_label.get_height() // 2
-        self.display.blit(music_label, (int(self.size[0] * 0.18), music_label_y))
+        #music_label = label_font.render("Music", True, (255, 255, 255))
+        #music_label_y = int(self.size[1] * 0.48) - music_label.get_height() // 2
+        #self.display.blit(music_label, (int(self.size[0] * 0.18), music_label_y))
         self.musicButton.draw(self.display)
         self.musicVolumeSlider.draw(self.display)
-        music_pct = label_font.render(f"{int(self.musicVolumeSlider.value * 100)}%", True, (255, 255, 255))
-        self.display.blit(music_pct, (int(self.size[0] * 0.76), music_label_y))
+        #music_pct = label_font.render(f"{int(self.musicVolumeSlider.value * 100)}%", True, (255, 255, 255))
+        #self.display.blit(music_pct, (int(self.size[0] * 0.76), music_label_y))
 
         # --- Sound row ---
-        sound_label = label_font.render("Sound", True, (255, 255, 255))
-        sound_label_y = int(self.size[1] * 0.62) - sound_label.get_height() // 2
-        self.display.blit(sound_label, (int(self.size[0] * 0.18), sound_label_y))
+        #sound_label = label_font.render("Sound", True, (255, 255, 255))
+        #sound_label_y = int(self.size[1] * 0.62) - sound_label.get_height() // 2
+        #self.display.blit(sound_label, (int(self.size[0] * 0.18), sound_label_y))
         self.soundButton.draw(self.display)
         self.soundVolumeSlider.draw(self.display)
-        sound_pct = label_font.render(f"{int(self.soundVolumeSlider.value * 100)}%", True, (255, 255, 255))
-        self.display.blit(sound_pct, (int(self.size[0] * 0.76), sound_label_y))
+        #sound_pct = label_font.render(f"{int(self.soundVolumeSlider.value * 100)}%", True, (255, 255, 255))
+        #self.display.blit(sound_pct, (int(self.size[0] * 0.76), sound_label_y))
 
         self.settingButton.draw(self.display)
         self.exitButton.draw(self.display)
