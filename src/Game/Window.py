@@ -62,21 +62,21 @@ class Window:
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
         self.scoreButton = Button(Assets.SCORE, Position(self, (71, 69.5)), buttonClick.scoreButtonClick)
 
-        self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (37, 35)), True, buttonClick.musicButtonClick)
-        self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (37, 45)), True, buttonClick.soundButtonClick)
+        self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (37, 28)), True, buttonClick.musicButtonClick)
+        self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (37, 38)), True, buttonClick.soundButtonClick)
 
-        self.musicVolumeSlider = Slider(self, (52, 35), 25, 1.0,
+        self.musicVolumeSlider = Slider(self, (52, 28), 25, 1.0,
                                         lambda v: self.musicPlayer.set_volume(v))
-        self.soundVolumeSlider = Slider(self, (52, 45), 25, 1.0,
+        self.soundVolumeSlider = Slider(self, (52, 38), 25, 1.0,
                                         lambda v: self.soundEffects.set_volume(v))
         
         self.pvpButton = Button(Assets.PVP, Position(self, (37, 57)), buttonClick.pvpButtonClick, hoverFactor=1.05)
         self.pveButton = Button(Assets.PVE, Position(self, (63, 57)), buttonClick.pveButtonClick, hoverFactor=1.05)
 
-        self.theme1Button = Button(Assets.THEME1, Position(self, (37, 67)), buttonClick.theme1ButtonClick, False)
-        self.theme2Button = Button(Assets.THEME2, Position(self, (67, 67)), buttonClick.theme2ButtonClick, False)
-        self.theme3Button = Button(Assets.THEME3, Position(self, (37, 80)), buttonClick.theme3ButtonClick, False)
-        self.theme4Button = Button(Assets.THEME4, Position(self, (67, 80)), buttonClick.theme4ButtonClick, False)
+        self.theme1Button = Button(Assets.THEME1, Position(self, (41, 61)), buttonClick.theme1ButtonClick, False)
+        self.theme2Button = Button(Assets.THEME2, Position(self, (59, 61)), buttonClick.theme2ButtonClick, False)
+        self.theme3Button = Button(Assets.THEME3, Position(self, (41, 82)), buttonClick.theme3ButtonClick, False)
+        self.theme4Button = Button(Assets.THEME4, Position(self, (59, 82)), buttonClick.theme4ButtonClick, False)
 
 
     def _drawBackground(self):
@@ -124,10 +124,9 @@ class Window:
 
         title_font = pg.font.SysFont(self.themeManager.fontName, 100)
         title = title_font.render("Options", True, (255, 255, 255))
-        self.display.blit(title, Position(self, (50, 11)).get((title.get_width(), 0)))
-
+        self.display.blit(title, Position(self, (50, 10)).get((title.get_width(), 0)))
+        
         label_font = pg.font.SysFont(self.themeManager.fontName, 40)
-
         # TODO: put music/sound settings in a separate method
         # --- Music row ---
         #music_label = label_font.render("Music", True, (255, 255, 255))
@@ -149,6 +148,10 @@ class Window:
 
         self.settingButton.draw(self.display)
         self.exitButton.draw(self.display)
+
+        # Theme selection text using Position
+        theme_label = label_font.render("Sélection du thème :", True, (255, 255, 255))
+        self.display.blit(theme_label, Position(self, (50, 45)).get((theme_label.get_width(), 0)))
 
         self.theme1Button.draw(self.display)
         self.theme2Button.draw(self.display)

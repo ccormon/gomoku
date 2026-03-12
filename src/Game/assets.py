@@ -1,7 +1,7 @@
 from enum import Enum
 
 class Assets:
-    ICON = "assets/image/icon_star_normal.png"
+    ICON = "assets/image/icon_game.png"
 
     EXIT = "assets/image/icon_exit.png"
     #EXIT_PRESSED = "assets/image/icon_exit_pressed.png"
