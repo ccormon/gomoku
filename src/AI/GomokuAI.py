@@ -1,240 +1,255 @@
-import src.AI.utils as utils
+from typing import List, Tuple, Set
 from src.Game.Game import BoardParam
+from src.AI.utils import DEPTH
 
 
-class GomokuAI():
-	def __init__(self):
-		self.numCase = BoardParam.NUM_CASE
-
-		self.boardMap = None
-		self.stonesLocations = set()
-		self.candidateMoves = set()
-
-		self.scorePlayer1 = {}
-		self.scorePlayer2 = {}
-
-		self.patternDictPlayer1 = utils.create_pattern_dict(isPlayer1=True)
-		self.patternDictPlayer2 = utils.create_pattern_dict(isPlayer1=False)
+Board = List[List[int]]
+Move = Tuple[int, int]
+StoneSet = Set[Move]
 
 
-	def create_pattern_dict(isPlayer1: bool) -> dict:
-		EMPTY = "0"
-		pattern_dict = {}
+class GomokuAI:
 
-		for player in ("1", "2"):
-			opponent = "2" if player == "1" else "1"
+	def __init__(self) -> None:
+		self.size: int = BoardParam.NUM_CASE
 
-			sign = 1 if (player == "1") == isPlayer1 else -1
-			# if isPlayer1:
-			# 	sign = 1 if player == "1" else -1
-			# else:
-			# 	sign = -1 if player == "1" else 1
-
-			def add(pattern, score):
-				pattern_dict["".join(pattern)] = score * sign
-
-			add((player, player, player, player, player), 1_000_000)
-			add((EMPTY, player, player, player, player, EMPTY), 100_000)
-			add((EMPTY, player, player, player, EMPTY, player, EMPTY), 10_000)
-			add((EMPTY, player, EMPTY, player, player, player, EMPTY), 10_000)
-			add((EMPTY, player, player, EMPTY, player, player, EMPTY), 10_000)
-			add((opponent, player, player, player, player, opponent), -10)
-			add((EMPTY, player, player, player, EMPTY), 1_000)
-			add((EMPTY, player, EMPTY, player, player, EMPTY), 1_000)
-			add((EMPTY, player, player, EMPTY, player, EMPTY), 1_000)
-			add((opponent, player, player, player, opponent), -10)
-			add((EMPTY, EMPTY, player, player, EMPTY), 100)
-			add((EMPTY, player, player, EMPTY, EMPTY), 100)
-			add((EMPTY, player, EMPTY, player, EMPTY), 100)
-
-		return pattern_dict
-
-
-	def getBoard(self):
-		return self.boardMap
-
+	# -------------------------
+	# UTILITIES
+	# -------------------------
 
 	def isInBoard(self, row: int, col: int) -> bool:
-		return 0 <= row < self.numCase and 0 <= col < self.numCase
+		return 0 <= row < self.size and 0 <= col < self.size
 
+	def isEmpty(self, board: Board, row: int, col: int) -> bool:
+		return self.isInBoard(row, col) and board[row][col] == 0
 
-	def isPositionOK(self, row: int, col: int) -> bool:
-		return self.isInBoard(row, col) and self.boardMap[row][col] == 0
+	# -------------------------
+	# MOVE GENERATION
+	# -------------------------
 
+	def getPossibleMoves(self, board: Board, stones: StoneSet) -> List[Move]:
+		"""
+		Génère les coups proches des pierres existantes
+		"""
 
-	def updateCandidateMoves(self, row: int, col: int, add=True):
-		for dr in range(-1, 2):
-			for dc in range(-1, 2):
-				r, c = row + dr, col + dc
-				if self.isPositionOK(r, c):
-					if add:
-						self.candidateMoves.add((r, c))
-					else:
-						self.candidateMoves.discard((r, c))
+		if not stones:
+			mid: int = self.size // 2
+			return [(mid, mid)]
 
+		moves: Set[Move] = set()
 
-	def updateScore(self, isPlayer1: bool, row: int, col: int, add=True):
-		patterns = self.pattern_dict_player1 if isPlayer1 else self.pattern_dict_player2
-		scores = self.scores_player1 if isPlayer1 else self.scores_player2
-		directions = [(-1, 1), (0, 1), (1, 1), (1, 0)]
+		for row, col in stones:
 
-		for d, (dr, dc) in enumerate(directions):
-			for i in range(-4, 5):
-				r = row + i * dr
-				c = col + i * dc
+			for dr in range(-1, 2):
+				for dc in range(-1, 2):
 
-				if not self.isInBoard(r, c):
-					continue
+					r: int = row + dr
+					c: int = col + dc
 
-				# construire alignment
-				alignment = []
-
-				for j in range(-4, 5):
-					rr = r + j * dr
-					cc = c + j * dc
-
-					if self.isInBoard(rr, cc):
-						alignment.append(str(self.boardMap[rr][cc]))
-
-				s = "".join(alignment)
-				val = 0
-
-				for pattern, _ in patterns.items():
-					val += s.count(pattern)
-
-				key = (r, c, d)
-
-				if add:
-					scores[key] = val
-				else:
-					scores.pop(key, None)
-
-
-	def doMove(self, isPlayer1: bool, row: int, col: int):
-		self.boardMap[row][col] = 1 if isPlayer1 else 2
-		self.stones.add((row, col))
-		self.updateCandidateMoves(row, col, add=True)
-		self.updateScore(isPlayer1, row, col, add=True)
-
-
-	def undoMove(self, row: int, col: int):
-		if self.isInBoard(row, col):
-			self.boardMap[row][col] = 0
-
-
-	def getAllDirectionsAlignments(self, row: int, col: int) -> str:
-		board = self.boardMap
-		size = self.numCase
-
-		directions = [(-1, 1), (0, 1), (1, 1), (1, 0)]
-		alignments = []
-
-		for dr, dc in directions:
-			chars = []
-
-			for i in range(-4, 5):
-				r = row + i * dr
-				c = col + i * dc
-
-				if 0 <= r < size and 0 <= c < size:
-					chars.append(str(board[r][c]))
-
-			alignments.append("".join(chars))
-
-		return alignments
-
-
-	def evaluate(self, isPlayer1: bool, row: int, col: int) -> int:
-		patterns = self.patternDictPlayer1 if isPlayer1 else self.patternDictPlayer2
-		alignments = self.getAllDirectionsAlignments(row, col)
-
-		score = 0
-		items = patterns.items()
-
-		for alignment in alignments:
-			for pattern, pattern_score in items:
-				n = alignment.count(pattern)
-				if n:
-					score += n * pattern_score
-
-		return score
-
-
-	def getPossibleMoves(self) -> list[tuple[int, int]]:
-		moves = set()
-		directions = [
-			(-1, -1), (-1, 0), (-1, 1),
-			(0, -1),  (0, 0),  (0, 1),
-			(1, -1),  (1, 0),  (1, 1)
-		]
-
-		for row, col in self.stonesLocations:
-			for i, j in directions:
-				r, c = row + i, col + j
-				if self.isPositionOK(r, c):
-					moves.add((r, c))
+					if self.isEmpty(board, r, c):
+						moves.add((r, c))
 
 		return list(moves)
 
+	# -------------------------
+	# ALIGNMENTS
+	# -------------------------
 
-	def minimax(self, isPlayer1: bool, lastMove: tuple, depth: int, alpha: int, beta: int, maximizingPlayer: bool) -> int:
+	def getAlignments(self, board: Board, row: int, col: int) -> List[str]:
+
+		directions: List[Tuple[int, int]] = [
+			(1, 0),
+			(0, 1),
+			(1, 1),
+			(1, -1)
+		]
+
+		alignments: List[str] = []
+
+		for dr, dc in directions:
+
+			line: List[str] = []
+
+			for i in range(-4, 5):
+
+				r: int = row + dr * i
+				c: int = col + dc * i
+
+				if self.isInBoard(r, c):
+					line.append(str(board[r][c]))
+
+			alignments.append("".join(line))
+
+		return alignments
+
+	# -------------------------
+	# POSITION EVALUATION
+	# -------------------------
+
+	def evaluatePosition(
+		self,
+		board: Board,
+		row: int,
+		col: int,
+		player: int
+	) -> int:
+
+		opponent: int = 2 if player == 1 else 1
+
+		patterns: dict[str, int] = {
+			"11111": 100000,
+			"011110": 10000,
+			"01110": 1000,
+			"0110": 100,
+		}
+
+		score: int = 0
+		alignments: List[str] = self.getAlignments(board, row, col)
+
+		for line in alignments:
+			for pattern, value in patterns.items():
+				playerPattern: str = pattern.replace("1", str(player))
+				opponentPattern: str = pattern.replace("1", str(opponent))
+
+				score += line.count(playerPattern) * value
+				score -= line.count(opponentPattern) * value
+
+		return score
+
+	def evaluateBoard(
+		self,
+		board: Board,
+		stones: StoneSet,
+		player: int
+	) -> int:
+
+		total: int = 0
+
+		for r, c in stones:
+			total += self.evaluatePosition(board, r, c, player)
+
+		return total
+
+	# -------------------------
+	# MINIMAX
+	# -------------------------
+
+	def minimax(
+		self,
+		board: Board,
+		stones: StoneSet,
+		depth: int,
+		alpha: float,
+		beta: float,
+		player: int,
+		maximizing: bool
+	) -> int:
+
 		if depth == 0:
-			return self.evaluate(isPlayer1, lastMove[0], lastMove[1])
+			return self.evaluateBoard(board, stones, player)
 
-		if maximizingPlayer:
-			value = float('-inf')
-			for move in self.getPossibleMoves():
-				self.doMove(isPlayer1, move[0], move[1])
-				value = max(value, self.minimax(isPlayer1, move, depth - 1, alpha, beta, False))
-				self.undoMove(move[0], move[1])
-				if value >= beta:
-					return value
+		moves: List[Move] = self.getPossibleMoves(board, stones)
+
+		if maximizing:
+
+			best: float = float("-inf")
+
+			for r, c in moves:
+
+				board[r][c] = player
+				stones.add((r, c))
+
+				value: int = self.minimax(
+					board,
+					stones,
+					depth - 1,
+					alpha,
+					beta,
+					player,
+					False
+				)
+
+				board[r][c] = 0
+				stones.discard((r, c))
+
+				best = max(best, value)
 				alpha = max(alpha, value)
+
+				if beta <= alpha:
+					break
+
+			return int(best)
+
 		else:
-			value = float('inf')
-			for move in self.getPossibleMoves():
-				self.doMove(not isPlayer1, move[0], move[1])
-				value = min(value, self.minimax(isPlayer1, move, depth - 1, alpha, beta, True))
-				self.undoMove(move[0], move[1])
-				if alpha >= value:
-					return value
+
+			opponent: int = 2 if player == 1 else 1
+			best: float = float("inf")
+
+			for r, c in moves:
+
+				board[r][c] = opponent
+				stones.add((r, c))
+
+				value: int = self.minimax(
+					board,
+					stones,
+					depth - 1,
+					alpha,
+					beta,
+					player,
+					True
+				)
+
+				board[r][c] = 0
+				stones.discard((r, c))
+
+				best = min(best, value)
 				beta = min(beta, value)
 
-		return value
+				if beta <= alpha:
+					break
 
+			return int(best)
 
-	def findBestMove(self, game, isPlayer1: bool):
-		self.boardMap = game.boardState
-		self.stonesLocations = game.stonesLocations
+	# -------------------------
+	# BEST MOVE
+	# -------------------------
 
-		bestMove = None
-		bestValue = float('-inf')
-		moves = self.getPossibleMoves()
+	def findBestMove(
+		self,
+		game,
+		player: int,
+		depth: int = DEPTH
+	) -> Move | None:
 
-		moves.sort(
-			key=lambda m: self.evaluate(isPlayer1, m[0], m[1]),
-			reverse=True
-		)
+		board: Board = game.boardState
+		stones: StoneSet = set(game.stonesLocations)
 
-		for row, col in moves:
-			self.doMove(isPlayer1, row, col)
+		moves: List[Move] = self.getPossibleMoves(board, stones)
 
-			value = self.minimax(
-				isPlayer1,
-				(row, col),
-				utils.DEPTH,
-				float('-inf'),
-				float('inf'),
-				True
+		bestMove: Move | None = None
+		bestScore: float = float("-inf")
+
+		for r, c in moves:
+
+			board[r][c] = player
+			stones.add((r, c))
+
+			score: int = self.minimax(
+				board,
+				stones,
+				depth - 1,
+				float("-inf"),
+				float("inf"),
+				player,
+				False
 			)
 
-			self.undoMove(row, col)
+			board[r][c] = 0
+			stones.discard((r, c))
 
-			if value > bestValue:
-				bestValue = value
-				bestMove = (row, col)
-
-			if bestValue >= utils.WIN_SCORE:
-				break
+			if score > bestScore:
+				bestScore = score
+				bestMove = (r, c)
 
 		return bestMove
