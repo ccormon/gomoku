@@ -6,7 +6,7 @@ from src.Game.Game import GameMode
 
 
 class ThemeManager:
-    def __init__(self, themes, window, default: str="classic"):
+    def __init__(self, themes, window, default: str="flower"):
         self.themes = themes
         self.window = window
         self.current = None

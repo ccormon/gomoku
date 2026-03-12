@@ -1,16 +1,16 @@
 THEMES = {
-    "classic": {
+    "flower": {
         "colors": {
-            "accent": (200, 200, 200),
-            "text": (255, 200, 100),
+            "accent": (104, 99, 164), #6863a4
+            "text": (233, 241, 238), #e9f1ee
         },
         "images": {
-            "stone_player1": "assets/classic/black.png",
-            "stone_player2": "assets/classic/white.png",
-            "icon_player1": "assets/classic/p1_icon.png",
-            "icon_player2": "assets/classic/p2_icon.png",
-            "icon_playerIA": "assets/classic/pAI_icon.png",
-            "background": "assets/classic/background.jpg",
+            "stone_player1": "assets/flower/black.png",
+            "stone_player2": "assets/flower/white.png",
+            "icon_player1": "assets/flower/p1_icon.png",
+            "icon_player2": "assets/flower/p2_icon.png",
+            "icon_playerIA": "assets/flower/pAI_icon.png",
+            "background": "assets/flower/background.png",
         },
         "music": "assets/sound/background_music.mp3",
         "font": "urwgothic"
@@ -18,8 +18,8 @@ THEMES = {
 
     "crystal": {
         "colors": {
-            "accent": (255, 255, 255),
-            "text": (0, 0, 0),
+            "accent": (220, 222, 241), #dcdef1
+            "text": (27, 31, 61), #1b1f3d
         },
         "images": {
             "stone_player1": "assets/crystal/black.png",
@@ -35,8 +35,8 @@ THEMES = {
 
     "bakery": {
         "colors": {
-            "accent": (210, 180, 140),
-            "text": (0, 0, 0),
+            "accent": (247, 239, 225), #f7efe1
+            "text": (102, 49, 19), #663113
         },
         "images": {
             "stone_player1": "assets/bakery/black.png",
@@ -50,18 +50,18 @@ THEMES = {
         "font": "urwgothic"
     },
 
-    "rat": {
+    "hen": {
         "colors": {
-            "accent": (34, 139, 34),
-            "text": (255, 255, 255),
+            "accent": (52, 51, 38), #343326
+            "text": (255, 255, 255), #fffaf0
         },
         "images": {
-            "stone_player1": "assets/rat/black.png",
-            "stone_player2": "assets/rat/white.png",
-            "icon_player1": "assets/rat/p1_icon.png",
-            "icon_player2": "assets/rat/p2_icon.png",
-            "icon_playerIA": "assets/rat/pAI_icon.png",
-            "background": "assets/rat/background.png",
+            "stone_player1": "assets/hen/black.png",
+            "stone_player2": "assets/hen/white.png",
+            "icon_player1": "assets/hen/p1_icon.png",
+            "icon_player2": "assets/hen/p2_icon.png",
+            "icon_playerIA": "assets/hen/pAI_icon.png",
+            "background": "assets/hen/background.png",
         },
         "music": "assets/sound/background_music.mp3",
         "font": "urwgothic"

@@ -35,7 +35,7 @@ class Window:
 
         self.soundEffects = SoundEffects()
         self.musicPlayer = MusicPlayer()
-        self.themeManager = ThemeManager(themes.THEMES, self, default="crystal")
+        self.themeManager = ThemeManager(themes.THEMES, self, default="flower")
         self.board = Board()
         self.overlay = Overlay(self.themeManager)
 

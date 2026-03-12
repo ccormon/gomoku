@@ -88,7 +88,7 @@ class ButtonClickHandler:
 
     def theme1ButtonClick(self, button: Button):
         self.soundEffects.play_sound("pop")
-        self.window.themeManager.setTheme("classic")
+        self.window.themeManager.setTheme("flower")
 
 
     def theme2ButtonClick(self, button: Button):
@@ -103,4 +103,4 @@ class ButtonClickHandler:
 
     def theme4ButtonClick(self, button: Button):
         self.soundEffects.play_sound("pop")
-        self.window.themeManager.setTheme("rat")
+        self.window.themeManager.setTheme("hen")
