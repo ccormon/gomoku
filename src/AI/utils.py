@@ -1,4 +1,3 @@
-BOARDSIZE = 10
 DEPTH = 5
 
 

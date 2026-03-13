@@ -11,6 +11,47 @@ StoneSet = Set[Move]
 class GomokuAI:
 	def __init__(self) -> None:
 		self.size: int = BoardParam.NUM_CASE
+		self.patterns = {
+			1: self._createPatterns(1),
+			2: self._createPatterns(2)
+		}
+
+
+	def _createPatterns(self, player: int) -> dict[str, int]:
+		EMPTY = "0"
+		player = str(player)
+		opponent = "2" if player == 1 else "1"
+
+		pattern_dict: dict[str, int] = {}
+
+		def add(pattern, score, sign):
+			pattern_dict["".join(pattern)] = score * sign
+
+		add((player, player, player, player, player), 1_000_000, 1)
+
+		add((EMPTY, player, player, player, player, EMPTY), 100_000, 1)
+
+		add((EMPTY, player, player, player, EMPTY, player, EMPTY), 10_000, 1)
+		add((EMPTY, player, EMPTY, player, player, player, EMPTY), 10_000, 1)
+		add((EMPTY, player, player, EMPTY, player, player, EMPTY), 10_000, 1)
+
+		add((EMPTY, player, player, player, EMPTY), 1_000, 1)
+		add((EMPTY, player, EMPTY, player, player, EMPTY), 1_000, 1)
+		add((EMPTY, player, player, EMPTY, player, EMPTY), 1_000, 1)
+
+		add((EMPTY, EMPTY, player, player, EMPTY), 100, 1)
+		add((EMPTY, player, player, EMPTY, EMPTY), 100, 1)
+		add((EMPTY, player, EMPTY, player, EMPTY), 100, 1)
+
+		add((opponent, opponent, opponent, opponent, opponent), 1_000_000, -1)
+
+		add((EMPTY, opponent, opponent, opponent, opponent, EMPTY), 100_000, -1)
+
+		add((EMPTY, opponent, opponent, opponent, EMPTY), 1_000, -1)
+
+		add((EMPTY, EMPTY, opponent, opponent, EMPTY), 100, -1)
+
+		return pattern_dict
 
 
 	# -------------------------
@@ -42,7 +83,8 @@ class GomokuAI:
 		for row, col in stones:
 			for dr in range(-1, 2):
 				for dc in range(-1, 2):
-
+					if dr == 0 and dc == 0:
+						continue
 					r: int = row + dr
 					c: int = col + dc
 
@@ -50,6 +92,14 @@ class GomokuAI:
 						moves.add((r, c))
 
 		return list(moves)
+
+
+	def orderMoves(self, board: Board, moves: List[Move], player: int) -> List[Move]:
+		return sorted(
+			moves,
+			key=lambda m: self.evaluatePosition(board, m[0], m[1], player),
+			reverse=True
+		)
 
 
 	# -------------------------
@@ -87,23 +137,14 @@ class GomokuAI:
 
 	def evaluatePosition(self, board: Board, row: int, col: int, player: int) -> int:
 		"""Evaluate the given position for the specified player based on potential alignments and patterns."""
-		opponent: int = 2 if player == 1 else 1
-		patterns: dict[str, int] = {
-			'11111': 100000,
-			'011110': 10000,
-			'01110': 1000,
-			'0110': 100,
-		}
-		score: int = 0
-		alignments: List[str] = self.getAlignments(board=board, row=row, col=col)
+		score = 0
+		alignments = self.getAlignments(board, row, col)
+
+		patterns = self.patterns[player]
 
 		for line in alignments:
 			for pattern, value in patterns.items():
-				playerPattern: str = pattern.replace('1', str(player))
-				opponentPattern: str = pattern.replace('1', str(opponent))
-
-				score += line.count(playerPattern) * value
-				score -= line.count(opponentPattern) * value
+				score += line.count(pattern) * value
 
 		return score
 
@@ -130,6 +171,8 @@ class GomokuAI:
 		moves: List[Move] = self.getPossibleMoves(board=board, stones=stones)
 
 		if maximizing:
+			moves = self.orderMoves(board=board, moves=moves, player=player)
+			moves = moves[:12] if depth < 3 else moves[:8]
 			best: float = float('-inf')
 
 			for r, c in moves:
@@ -151,6 +194,8 @@ class GomokuAI:
 
 		else:
 			opponent: int = 2 if player == 1 else 1
+			moves = self.orderMoves(board=board, moves=moves, player=opponent)
+			moves = moves[:10] if depth < 3 else moves[:8]
 			best: float = float('inf')
 
 			for r, c in moves:
@@ -181,6 +226,8 @@ class GomokuAI:
 		stones: StoneSet = set(game.stonesLocations)
 
 		moves: List[Move] = self.getPossibleMoves(board=board, stones=stones)
+		moves = self.orderMoves(board=board, moves=moves, player=player)
+		moves = moves[:12]
 
 		bestMove: Move | None = None
 		bestScore: float = float('-inf')
