@@ -60,6 +60,7 @@ class Window:
         self.exitButton = Button(Assets.EXIT, Position(self, (96, 5)), buttonClick.exitButtonClick)
         self.settingButton = Button(Assets.SETTINGS, Position(self, (92, 5)), buttonClick.settingButtonClick)
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
+        self.helpButton = Button(Assets.HELP, Position(self, (88, 5)), buttonClick.helpButtonClick)
         self.scoreButton = Button(Assets.SCORE, Position(self, (71, 69.5)), buttonClick.scoreButtonClick)
 
         self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (37, 28)), True, buttonClick.musicButtonClick)
@@ -73,10 +74,10 @@ class Window:
         self.pvpButton = Button(Assets.PVP, Position(self, (37, 57)), buttonClick.pvpButtonClick, hoverFactor=1.05)
         self.pveButton = Button(Assets.PVE, Position(self, (63, 57)), buttonClick.pveButtonClick, hoverFactor=1.05)
 
-        self.theme1Button = Button(Assets.THEME1, Position(self, (41, 61)), buttonClick.theme1ButtonClick, False)
-        self.theme2Button = Button(Assets.THEME2, Position(self, (59, 61)), buttonClick.theme2ButtonClick, False)
-        self.theme3Button = Button(Assets.THEME3, Position(self, (41, 82)), buttonClick.theme3ButtonClick, False)
-        self.theme4Button = Button(Assets.THEME4, Position(self, (59, 82)), buttonClick.theme4ButtonClick, False)
+        self.theme1Button = Button(Assets.THEME1, Position(self, (41, 61)), buttonClick.theme1ButtonClick, False, hoverFactor=1.05)
+        self.theme2Button = Button(Assets.THEME2, Position(self, (59, 61)), buttonClick.theme2ButtonClick, False, hoverFactor=1.05)
+        self.theme3Button = Button(Assets.THEME3, Position(self, (41, 82)), buttonClick.theme3ButtonClick, False, hoverFactor=1.05)
+        self.theme4Button = Button(Assets.THEME4, Position(self, (59, 82)), buttonClick.theme4ButtonClick, False, hoverFactor=1.05)
 
 
     def _drawBackground(self):
@@ -109,6 +110,8 @@ class Window:
 
         self.exitButton.draw(self.display)
         self.homeButton.draw(self.display)
+        if self.game.mode.name == "PVP":
+            self.helpButton.draw(self.display)
 
         self.player1Icon.draw(self.display)
         self.player2Icon.draw(self.display)
@@ -190,6 +193,8 @@ class Window:
     def updateGameScene(self, event: pg.event.Event):
         self.homeButton.update(event)
         self.exitButton.update(event)
+        if self.game.mode.name == "PVP":
+            self.helpButton.update(event)
         self.game.update(event, self)
 
 

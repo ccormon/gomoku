@@ -3,6 +3,7 @@ from enum import Enum
 class Assets:
     ICON = "assets/image/icon_game.png"
     CROSS = "assets/image/invalid.png"
+    HELP = "assets/image/icon_help.png"
 
     EXIT = "assets/image/icon_exit.png"
     #EXIT_PRESSED = "assets/image/icon_exit_pressed.png"

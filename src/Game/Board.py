@@ -108,8 +108,25 @@ class Board:
 
 
     def _drawHoverPiece(self, window):
+        import math
         game = window.game
         hoverCell = game.hoverCell
+
+        if game.proposedMove is not None:
+            r, c = game.proposedMove
+            if game.boardState[r][c] == 0:
+                baseImage = window.themeManager.getPiecesImage(game.activePlayer)
+                
+                # Animate scale between 0.8 and 1.2
+                scale = 1.0 + 0.2 * math.sin(pg.time.get_ticks() / 200.0)
+                newSize = (int(baseImage.get_width() * scale), int(baseImage.get_height() * scale))
+                
+                hintImage = pg.transform.smoothscale(baseImage, newSize).convert_alpha()
+                hintImage.set_alpha(self.hoverAlpha // 2) # More transparent
+                
+                pos = self._getPosFromIndex(r, c, window)
+                piecePos = Position.convert(pos, hintImage.get_size(), PositionReference.CENTER)
+                window.display.blit(hintImage, piecePos)
 
         if hoverCell is None:
             return

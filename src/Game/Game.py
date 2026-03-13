@@ -29,6 +29,7 @@ class Game:
         self.gomokuAI = GomokuAI()
         self.isActive = True
         self.hoverCell = None
+        self.proposedMove = None
 
 
     def _checkFiveInARow(self, row: int, col: int):
@@ -149,6 +150,7 @@ class Game:
             self.moveHistory.append((self.activePlayer, row, col))
             self.timerHistory.append((self.activePlayer, self.timer.getElapsedTime()))
             self.hoverCell = None
+            self.proposedMove = None
 
             if self._checkWinCondition(row, col) or self._checkTieCondition():
                 self._endGame(window)
@@ -168,6 +170,7 @@ class Game:
         self.moveHistory = []
         self.timerHistory = []
         self.hoverCell = None
+        self.proposedMove = None
         self.timer.reset()
         self.timer.start()
 

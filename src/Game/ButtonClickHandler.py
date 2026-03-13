@@ -86,6 +86,13 @@ class ButtonClickHandler:
         self.window.displayedWindow = DisplayedWindow.GAME_SCENE
 
 
+    def helpButtonClick(self, button: Button):
+        self.soundEffects.play_sound("pop")
+        if self.game.mode == GameMode.PVP:
+            move = self.game.gomokuAI.findBestMove(self.game, False) # Using False for debug flag
+            self.game.proposedMove = move
+
+
     def theme1ButtonClick(self, button: Button):
         self.soundEffects.play_sound("pop")
         self.window.themeManager.setTheme("flower")
