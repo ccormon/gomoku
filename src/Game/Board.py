@@ -122,8 +122,14 @@ class Board:
         if game.boardState[row][col] != 0:
             return
 
-        pieceImage = window.themeManager.getPiecesImage(game.activePlayer).copy()
-        pieceImage.set_alpha(self.hoverAlpha)
+        if game._checkDoubleThree(row, col):
+            from src.Game.assets import Assets
+            orig = pg.image.load(Assets.CROSS).convert_alpha()
+            refSize = window.themeManager.getPiecesImage(game.activePlayer).get_size()
+            pieceImage = pg.transform.scale(orig, refSize)
+        else:
+            pieceImage = window.themeManager.getPiecesImage(game.activePlayer).copy()
+            pieceImage.set_alpha(self.hoverAlpha)
 
         pos = self._getPosFromIndex(row, col, window)
         piecePos = Position.convert(pos, pieceImage.get_size(), PositionReference.CENTER)

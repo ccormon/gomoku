@@ -96,9 +96,35 @@ class Game:
                 self.stonesLocations = [(r, c) for (r, c) in self.stonesLocations if (r, c) != (r1, c1) and (r, c) != (r2, c2)]
 
 
+    def _checkDoubleThree(self, row: int, col: int):
+        patterns = [".XXX..", "..XXX.", ".X.XX.", ".XX.X."]
+        free_three_count = 0
+
+        for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:
+            line_str = ""
+            for i in range(-4, 5):
+                r, c = row + i * dr, col + i * dc
+                if i == 0:
+                    line_str += "X"
+                elif 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE:
+                    val = self.boardState[r][c]
+                    if val == 0:
+                        line_str += "."
+                    elif val == self.activePlayer:
+                        line_str += "X"
+                    else:
+                        line_str += "O"
+                else:
+                    line_str += "O"
+
+            if any(p in line_str for p in patterns):
+                free_three_count += 1
+
+        return free_three_count >= 2
+
+
     def _checkValidMove(self, row: int, col: int):
-        # TODO: check if the move is valid (not placing on an occupied space, not violating opening rules, ...)8
-        if self.boardState[row][col] != 0:
+        if self.boardState[row][col] != 0 or self._checkDoubleThree(row, col):
             return False
         return True
 
