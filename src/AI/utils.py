@@ -73,3 +73,19 @@ patterns_player2 = [
 	Pattern((1, 2, 2, 2, 1), -50),
 	Pattern((1, 2, 2, 2, 2, 1), -100),
 ]
+
+
+patterns_freethree_player1 = [
+	Pattern((0, 0, 1, 1, 1, 0), 0),
+	Pattern((0, 1, 1, 1, 0, 0), 0),
+	Pattern((0, 1, 1, 0, 1, 0), 0),
+	Pattern((0, 1, 0, 1, 1, 0), 0),
+]
+
+
+patterns_freethree_player2 = [
+	Pattern((0, 0, 2, 2, 2, 0), 0),
+	Pattern((0, 2, 2, 2, 0, 0), 0),
+	Pattern((0, 2, 2, 0, 2, 0), 0),
+	Pattern((0, 2, 0, 2, 2, 0), 0),
+]
