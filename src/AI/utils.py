@@ -1,12 +1,9 @@
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
 class Pattern:
-	pattern: tuple[int, ...]
-	score: int
+	def __init__(self, pattern: tuple[int, ...], score: int):
+		self.pattern = pattern
+		self.score = score
 
-	@property
+
 	def length(self):
 		return len(self.pattern)
 

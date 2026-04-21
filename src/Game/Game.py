@@ -13,6 +13,8 @@ from src.Game.Board import BoardParam
 from src.AI.GomokuAI import GomokuAI
 from src.Game.Timer import Timer
 
+from src.Game.GameState import GameState
+
 
 class Game:
     def __init__(self):
@@ -21,7 +23,8 @@ class Game:
         self.currentScore = {1: 0, 2: 0}
         self.winner = 0
 
-        self.boardState = [[0 for _ in range(BoardParam.NUM_CASE)] for _ in range(BoardParam.NUM_CASE)] # 0: empty, 1: player1 piece, 2: player2 piece
+        self.state = GameState(BoardParam.NUM_CASE)
+
         self.stonesLocations = []           # list of tuple for each piece on the board: (row, col)
         self.moveHistory = []               # list of (player, row, col) tuples for each move
         self.timerHistory = []              # list of (player, time) tuples for each move
@@ -32,19 +35,24 @@ class Game:
         self.proposedMove = None
 
 
+    @property
+    def boardState(self):
+        return self.state.grid
+
+
     def _checkFiveInARow(self, row: int, col: int):
         for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:  # horizontal, vertical, diagonal down-right, diagonal down-left
             count = 1  # count the piece just placed
             # check in the positive direction
             r, c = row + dr, col + dc
-            while 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE and self.boardState[r][c] == self.activePlayer:
+            while 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE and self.state.grid[r][c] == self.activePlayer:
                 count += 1
                 r += dr
                 c += dc
 
             # check in the negative direction
             r, c = row - dr, col - dc
-            while 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE and self.boardState[r][c] == self.activePlayer:
+            while 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE and self.state.grid[r][c] == self.activePlayer:
                 count += 1
                 r -= dr
                 c -= dc
@@ -61,7 +69,7 @@ class Game:
 
 
     def _checkTieCondition(self):
-        if any(0 in row for row in self.boardState):
+        if any(0 in row for row in self.state.grid):
             return False
 
         if self.currentScore[1] == self.currentScore[2]:
@@ -72,7 +80,7 @@ class Game:
 
 
     def _placePiece(self, row: int, col: int):
-        self.boardState[row][col] = self.activePlayer
+        self.state.play(row, col, self.activePlayer)
         self.stonesLocations.append((row, col))
 
 
@@ -84,13 +92,13 @@ class Game:
             r3, c3 = row + 3*dr, col + 3*dc
 
             if (0 <= r3 < BoardParam.NUM_CASE and 0 <= c3 < BoardParam.NUM_CASE
-                and self.boardState[r1][c1] == opponent
-                and self.boardState[r2][c2] == opponent
-                and self.boardState[r3][c3] == self.activePlayer):
+                and self.state.grid[r1][c1] == opponent
+                and self.state.grid[r2][c2] == opponent
+                and self.state.grid[r3][c3] == self.activePlayer):
                 
                 # capture detected
-                self.boardState[r1][c1] = 0
-                self.boardState[r2][c2] = 0
+                self.state.undo(r1, c1)
+                self.state.undo(r2, c2)
                 self.currentScore[self.activePlayer] += 2
 
                 # remove captured pieces from stonesLocation
@@ -108,7 +116,7 @@ class Game:
                 if i == 0:
                     line_str += "X"
                 elif 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE:
-                    val = self.boardState[r][c]
+                    val = self.state.grid[r][c]
                     if val == 0:
                         line_str += "."
                     elif val == self.activePlayer:
@@ -125,7 +133,7 @@ class Game:
 
 
     def _checkValidMove(self, row: int, col: int):
-        if self.boardState[row][col] != 0 or self._checkDoubleThree(row, col):
+        if self.state.grid[row][col] != 0 or self._checkDoubleThree(row, col):
             return False
         return True
 
@@ -147,6 +155,13 @@ class Game:
         if self._checkValidMove(row, col):
             self._placePiece(row, col)
             self._handleCapture(row, col)
+
+            for dr in self.state.grid:
+                print(dr)
+            print("------")
+            print("HASH:", self.state.hash)
+            print()
+
             self.moveHistory.append((self.activePlayer, row, col))
             self.timerHistory.append((self.activePlayer, self.timer.getElapsedTime()))
             self.hoverCell = None
@@ -165,7 +180,7 @@ class Game:
         self.activePlayer = 1
         self.mode = gameMode
         self.currentScore = {1: 0, 2: 0}
-        self.boardState = [[0 for _ in range(BoardParam.NUM_CASE)] for _ in range(BoardParam.NUM_CASE)]
+        self.state = GameState(BoardParam.NUM_CASE)
         self.stonesLocations = []
         self.moveHistory = []
         self.timerHistory = []
@@ -191,5 +206,7 @@ class Game:
         if event.type == MOUSEBUTTONDOWN:
             gameMove = window.board.getIndexFromPos(window, event.pos)
             if gameMove[0] is not None and gameMove[1] is not None:
+
+                print("gameMove =", gameMove, type(gameMove))
+
                 self._handleMove(gameMove[0], gameMove[1], window)
-            
