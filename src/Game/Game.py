@@ -155,13 +155,6 @@ class Game:
         if self._checkValidMove(row, col):
             self._placePiece(row, col)
             self._handleCapture(row, col)
-
-            for dr in self.state.grid:
-                print(dr)
-            print("------")
-            print("HASH:", self.state.hash)
-            print()
-
             self.moveHistory.append((self.activePlayer, row, col))
             self.timerHistory.append((self.activePlayer, self.timer.getElapsedTime()))
             self.hoverCell = None
@@ -190,6 +183,19 @@ class Game:
         self.timer.start()
 
 
+    def test_undo(self, window):
+        print("=== TEST UNDO ===")
+
+        self._handleMove(7, 7, window)
+        self.state.debug_state()
+
+        self.state.undo(7, 7)
+        self.state.grid[7][7] = 0
+
+        print("After undo:")
+        self.state.debug_state()
+
+
     def update(self, event: pg.event.Event, window):
         if self.mode == GameMode.PVE and self.activePlayer == 2:
             # TODO: maybe start AI timer here if too slow
@@ -206,7 +212,8 @@ class Game:
         if event.type == MOUSEBUTTONDOWN:
             gameMove = window.board.getIndexFromPos(window, event.pos)
             if gameMove[0] is not None and gameMove[1] is not None:
-
-                print("gameMove =", gameMove, type(gameMove))
-
                 self._handleMove(gameMove[0], gameMove[1], window)
+
+        if event.type == pg.KEYDOWN:
+            if event.key == pg.K_u:  # touche U
+                self.test_undo(window)

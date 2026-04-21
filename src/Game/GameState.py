@@ -16,6 +16,13 @@ class GameState:
 		]
 
 
+	def debug_state(self):
+		print("HASH:", self.hash)
+		for row in self.grid:
+			print(row)
+		print("-----")
+
+
 	def play(self, x, y, player):
 		self.grid[x][y] = player
 		self.hash ^= self.zobrist[x][y][player]
