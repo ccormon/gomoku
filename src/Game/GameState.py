@@ -16,7 +16,7 @@ class GameState:
 		]
 
 
-	def debug_state(self):
+	def debug_state(self):														# <== A SUPPRIMER
 		print("HASH:", self.hash)
 		for row in self.grid:
 			print(row)

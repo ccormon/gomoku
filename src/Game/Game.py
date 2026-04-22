@@ -183,7 +183,7 @@ class Game:
         self.timer.start()
 
 
-    def test_undo(self, window):
+    def test_undo(self, window):                                                # <== A SUPPRIMER
         print("=== TEST UNDO ===")
 
         self._handleMove(7, 7, window)
@@ -199,7 +199,7 @@ class Game:
     def update(self, event: pg.event.Event, window):
         if self.mode == GameMode.PVE and self.activePlayer == 2:
             # TODO: maybe start AI timer here if too slow
-            AIMove = self.gomokuAI.findBestMove(self, False)
+            AIMove = self.gomokuAI.findBestMove(self.state, False)
             self._handleMove(AIMove[0], AIMove[1], window)
 
         if event.type == MOUSEMOTION:
@@ -214,6 +214,6 @@ class Game:
             if gameMove[0] is not None and gameMove[1] is not None:
                 self._handleMove(gameMove[0], gameMove[1], window)
 
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_u:  # touche U
+        if event.type == pg.KEYDOWN:                                            # <== A SUPPRIMER
+            if event.key == pg.K_u:
                 self.test_undo(window)
