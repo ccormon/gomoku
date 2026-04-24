@@ -64,23 +64,16 @@ class GomokuAI:
 
 	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool) -> float:
 		"""Minimax algorithm with alpha-beta pruning and transposition table."""
-		if state.hash in self.tt:
-			stored_depth, stored_score = self.tt[state.hash]
-
-			if stored_depth >= depth:
-				return stored_score
-
 		if depth == 0:
 			score = self.evaluateMove(state)
-			self.tt[state.hash] = (depth, score)
 			return score
 
 		moves = self.getCandidateMoves(state)
 		moves = sorted(
 			moves,
 			key=lambda m: self.quickEvaluate(state, m, maximizingPlayer),
-			reverse=maximizingPlayer
-		)[:10]
+			reverse=True
+		)
 
 		if maximizingPlayer:
 			max_eval = float('-inf')
@@ -95,7 +88,6 @@ class GomokuAI:
 				if beta <= alpha:
 					break
 
-			self.tt[state.hash] = (depth, max_eval)
 			return max_eval
 
 		else:
@@ -111,12 +103,13 @@ class GomokuAI:
 				if beta <= alpha:
 					break
 
-			self.tt[state.hash] = (depth, min_eval)
 			return min_eval
 
 
 	def findBestMove(self, state: GameState, player: int) -> tuple[int, int] | None:
 		"""Finds the best move for the given player using the minimax algorithm."""
+		state.debug_state()														# <== A SUPPRIMER
+
 		best_move = None
 
 		is_maximizing = (player == 1)
@@ -129,7 +122,7 @@ class GomokuAI:
 
 			score = self.minimax(
 				state, 
-				depth=3, 
+				depth=2, 
 				alpha=float('-inf'), 
 				beta=float('inf'), 
 				maximizingPlayer=(not is_maximizing)
@@ -145,4 +138,5 @@ class GomokuAI:
 					best_score = score
 					best_move = (r, c)
 
+		print(f"Best move for player {player}: {best_move} with score {best_score}")		# <== A SUPPRIMER
 		return best_move

@@ -199,7 +199,7 @@ class Game:
     def update(self, event: pg.event.Event, window):
         if self.mode == GameMode.PVE and self.activePlayer == 2:
             # TODO: maybe start AI timer here if too slow
-            AIMove = self.gomokuAI.findBestMove(self.state, False)
+            AIMove = self.gomokuAI.findBestMove(self.state, 2)
             self._handleMove(AIMove[0], AIMove[1], window)
 
         if event.type == MOUSEMOTION:
