@@ -14,7 +14,7 @@ class GomokuAI:
 
 
 	def getLinesAround(self, grid: list[list[int]], r: int, c: int) -> list[list[int]]:
-		directions = [(1,0), (0,1), (1,1), (1,-1)]
+		directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
 		lines = []
 
 		for dr, dc in directions:
@@ -34,9 +34,10 @@ class GomokuAI:
 		return lines
 
 
-	def evaluateMove(self, state: GameState, r: int, c: int) -> int:
+	def evaluateMove(self, state: GameState, last_move: tuple[int, int]) -> int:
 		"""Evaluates the board state and returns a score from the perspective of player 1."""
 		grid = state.grid
+		r, c = last_move
 		lines = self.getLinesAround(grid, r, c)
 
 		score = 0
@@ -68,8 +69,8 @@ class GomokuAI:
 		moves = set()
 
 		for r, c in pieces:
-			for dr in range(-2, 3):
-				for dc in range(-2, 3):
+			for dr in range(-1, 2):
+				for dc in range(-1, 2):
 					nr, nc = r + dr, c + dc
 
 					if 0 <= nr < size and 0 <= nc < size and grid[nr][nc] == 0:
@@ -82,15 +83,24 @@ class GomokuAI:
 		"""Quick heuristic evaluation for move ordering in minimax."""
 		r, c = move
 		player = 1 if maximizingPlayer else 2
+		opponent = 2 if player == 1 else 1
 
-		state.play(r, c, player)
-		score = self.evaluateMove(state, r, c)
-		state.undo(r, c)
+		score = 0
+
+		for dr in [-1, 0, 1]:
+			for dc in [-1, 0, 1]:
+				nr, nc = r + dr, c + dc
+
+				if 0 <= nr < self.size and 0 <= nc < self.size:
+					if state.grid[nr][nc] == player:
+						score += 2
+					elif state.grid[nr][nc] == opponent:
+						score += 1
 
 		return score
 
 
-	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool, last_move: tuple[int, int]) -> float:
+	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool , last_move: tuple[int, int]) -> float:
 		"""Minimax algorithm with alpha-beta pruning and transposition table."""
 		if state.hash in self.tt:
 			stored_depth, stored_score = self.tt[state.hash]
@@ -99,7 +109,7 @@ class GomokuAI:
 				return stored_score
 
 		if depth == 0:
-			score = self.evaluateMove(state, last_move[0], last_move[1])
+			score = self.evaluateMove(state, last_move)
 			self.tt[state.hash] = (depth, score)
 			return score
 
@@ -108,7 +118,7 @@ class GomokuAI:
 			moves,
 			key=lambda m: self.quickEvaluate(state, m, maximizingPlayer),
 			reverse=maximizingPlayer
-		)
+		)[:10]
 
 		if maximizingPlayer:
 			max_eval = float('-inf')
@@ -145,18 +155,38 @@ class GomokuAI:
 
 	def findBestMove(self, state: GameState, player: int) -> tuple[int, int] | None:
 		"""Finds the best move for the given player using the minimax algorithm."""
-		best_score = float('-inf')
 		best_move = None
+		
+		is_maximizing = (player == 1)
+		best_score = float('-inf') if is_maximizing else float('inf')
 
+		print("getCandidateMoves...")
 		moves = self.getCandidateMoves(state)
 
+		print(f"Evaluating {len(moves)} candidate moves...")
 		for (r, c) in moves:
+			print(f"Evaluating move ({r}, {c})...")
 			state.play(r, c, player)
-			score = self.minimax(state, depth=2, alpha=float('-inf'), beta=float('inf'), maximizingPlayer=False, last_move=(r, c))
+			print("Starting minimax...")
+			
+			score = self.minimax(
+				state, 
+				depth=3, 
+				alpha=float('-inf'), 
+				beta=float('inf'), 
+				maximizingPlayer=(not is_maximizing), 
+				last_move=(r, c)
+			)
+			print(f"Move ({r}, {c}) has score {score}")
 			state.undo(r, c)
 
-			if score > best_score:
-				best_score = score
-				best_move = (r, c)
+			if is_maximizing:
+				if score > best_score:
+					best_score = score
+					best_move = (r, c)
+			else:
+				if score < best_score:
+					best_score = score
+					best_move = (r, c)
 
 		return best_move
