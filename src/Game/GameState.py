@@ -48,40 +48,36 @@ class GameState:
 		self.score += (new_score - old_score)
 
 
-	def evaluate_lines_around(self, r: int, c: int) -> int:
-		"""Evaluates the board state and returns a score from the perspective of player 1."""
-		lines = self.get_lines_around(r, c)
-		score = 0
-
-		for line in lines:
-			for pattern in patterns_player1:
-				for i in range(len(line) - pattern.length() + 1):
-					if tuple(line[i:i + pattern.length()]) == pattern.pattern:
-						score += pattern.score
-
-			for pattern in patterns_player2:
-				for i in range(len(line) - pattern.length() + 1):
-					if tuple(line[i:i + pattern.length()]) == pattern.pattern:
-						score += pattern.score
-
-		return score
-
-
-	def get_lines_around(self, r: int, c: int) -> list[list[int]]:
+	def get_lines_around(self, r: int, c: int) -> str:
 		directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
-		lines = []
+		chars = []
 
 		for dr, dc in directions:
-			line = []
 			for i in range(-4, 5):
 				nr = r + dr * i
 				nc = c + dc * i
 
 				if 0 <= nr < self.size and 0 <= nc < self.size:
-					line.append(self.grid[nr][nc])
+					chars.append(str(self.grid[nr][nc]))
 				else:
-					line.append(3)
+					chars.append('3')
 
-			lines.append(line)
+			chars.append('#')
 
-		return lines
+		return "".join(chars)
+
+
+	def evaluate_lines_around(self, r: int, c: int) -> int:
+		"""Evaluates the board state and returns a score from the perspective of player 1."""
+		lines_str = self.get_lines_around(r, c)
+		score = 0
+
+		for pattern in patterns_player1:
+			if pattern.pattern_str in lines_str:
+				score += pattern.score * lines_str.count(pattern.pattern_str)
+
+		for pattern in patterns_player2:
+			if pattern.pattern_str in lines_str:
+				score += pattern.score * lines_str.count(pattern.pattern_str)
+
+		return score

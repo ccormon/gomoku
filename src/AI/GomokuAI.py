@@ -11,6 +11,7 @@ class GomokuAI:
 			2: patterns_player2
 		}
 		self.tt = {}
+		self.killer_moves: list[list[tuple[int, int] | None]] = [[None, None] for _ in range(30)]
 
 
 	def evaluateMove(self, state: GameState) -> int:
@@ -64,16 +65,39 @@ class GomokuAI:
 
 	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool) -> float:
 		"""Minimax algorithm with alpha-beta pruning and transposition table."""
+		alpha_original = alpha
+		beta_original = beta
+
+		if state.hash in self.tt:
+			entry = self.tt[state.hash]
+			if entry['depth'] >= depth:
+				if entry['flag'] == 'EXACT':
+					return entry['value']
+				elif entry['flag'] == 'LOWERBOUND':
+					alpha = max(alpha, entry['value'])
+				elif entry['flag'] == 'UPPERBOUND':
+					beta = min(beta, entry['value'])
+
+				if alpha >= beta:
+					return entry['value']
+
 		if depth == 0:
 			score = self.evaluateMove(state)
 			return score
 
 		moves = self.getCandidateMoves(state)
-		moves = sorted(
-			moves,
-			key=lambda m: self.quickEvaluate(state, m, maximizingPlayer),
-			reverse=True
-		)
+
+		def move_score(move):
+			score = self.quickEvaluate(state, move, maximizingPlayer)
+
+			if move == self.killer_moves[depth][0]:
+				score += 1_000_000
+			elif move == self.killer_moves[depth][1]:
+				score += 500_000
+
+			return score
+
+		moves = sorted(moves, key=move_score, reverse=True)[:15]
 
 		if maximizingPlayer:
 			max_eval = float('-inf')
@@ -86,9 +110,12 @@ class GomokuAI:
 				alpha = max(alpha, evaluation)
 
 				if beta <= alpha:
+					if self.killer_moves[depth][0] != (r, c):
+						self.killer_moves[depth][1] = self.killer_moves[depth][0]
+						self.killer_moves[depth][0] = (r, c)
 					break
 
-			return max_eval
+			best_eval = max_eval
 
 		else:
 			min_eval = float('inf')
@@ -101,9 +128,26 @@ class GomokuAI:
 				beta = min(beta, evaluation)
 
 				if beta <= alpha:
+					if self.killer_moves[depth][0] != (r, c):
+						self.killer_moves[depth][1] = self.killer_moves[depth][0]
+						self.killer_moves[depth][0] = (r, c)
 					break
 
-			return min_eval
+			best_eval = min_eval
+
+		flag = 'EXACT'
+		if best_eval <= alpha_original:
+			flag = 'UPPERBOUND'
+		elif best_eval >= beta_original:
+			flag = 'LOWERBOUND'
+
+		self.tt[state.hash] = {
+			'value': best_eval,
+			'depth': depth,
+			'flag': flag
+		}
+
+		return best_eval
 
 
 	def findBestMove(self, state: GameState, player: int) -> tuple[int, int] | None:
@@ -122,7 +166,7 @@ class GomokuAI:
 
 			score = self.minimax(
 				state, 
-				depth=2, 
+				depth=4, 
 				alpha=float('-inf'), 
 				beta=float('inf'), 
 				maximizingPlayer=(not is_maximizing)

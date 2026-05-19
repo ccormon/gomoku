@@ -2,6 +2,7 @@ class Pattern:
 	def __init__(self, pattern: tuple[int, ...], score: int):
 		self.pattern = pattern
 		self.score = score
+		self.pattern_str = "".join(map(str, pattern))
 
 
 	def length(self):
