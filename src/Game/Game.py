@@ -187,13 +187,13 @@ class Game:
         print("=== TEST UNDO ===")
 
         self._handleMove(7, 7, window)
-        self.state.debug_state()
+        self.state.debugState()
 
         self.state.undo(7, 7)
         self.state.grid[7][7] = 0
 
         print("After undo:")
-        self.state.debug_state()
+        self.state.debugState()
 
 
     def update(self, event: pg.event.Event, window):

@@ -10,8 +10,9 @@ class GomokuAI:
 			1: patterns_player1,
 			2: patterns_player2
 		}
-		self.tt = {}
+		self.transposition_table = {}
 		self.killer_moves: list[list[tuple[int, int] | None]] = [[None, None] for _ in range(30)]
+		self.history_table = [[[0.0 for _ in range(3)] for _ in range(self.size)] for _ in range(self.size)]
 
 
 	def evaluateMove(self, state: GameState) -> int:
@@ -21,46 +22,27 @@ class GomokuAI:
 
 	def getCandidateMoves(self, state: GameState) -> list[tuple[int, int]]:
 		"""Returns a list of candidate moves (empty cells adjacent to occupied cells)."""
-		size = self.size
-		grid = state.grid
+		if not state.candidates:
+			return [(self.size // 2, self.size // 2)]
 
-		pieces = [(r, c) for r in range(size) for c in range(size) if grid[r][c] != 0]
-
-		if not pieces:
-			return [(size // 2, size // 2)]
-
-		moves = set()
-
-		for r, c in pieces:
-			for dr in range(-1, 2):
-				for dc in range(-1, 2):
-					nr, nc = r + dr, c + dc
-
-					if 0 <= nr < size and 0 <= nc < size and grid[nr][nc] == 0:
-						moves.add((nr, nc))
-
-		return list(moves)
+		return list(state.candidates)
 
 
-	def quickEvaluate(self, state: GameState, move: tuple[int, int], maximizingPlayer: bool) -> float:
-		"""Quick heuristic evaluation for move ordering in minimax."""
-		r, c = move
-		player = 1 if maximizingPlayer else 2
-		opponent = 2 if player == 1 else 1
+	# def quickEvaluate(self, state: GameState, move: tuple[int, int], maximizingPlayer: bool) -> float:
+	# 	"""Heuristic evaluation for move ordering in minimax (Beam Search aware)."""
+	# 	r, c = move
+	# 	player = 1 if maximizingPlayer else 2
+		
+	# 	state.grid[r][c] = player
+	# 	score_player = state.evaluateLinesAround(r, c)
+	# 	state.grid[r][c] = 0
+		
+	# 	opponent = 2 if player == 1 else 1
+	# 	state.grid[r][c] = opponent
+	# 	score_opponent = state.evaluateLinesAround(r, c)
+	# 	state.grid[r][c] = 0
 
-		score = 0
-
-		for dr in [-1, 0, 1]:
-			for dc in [-1, 0, 1]:
-				nr, nc = r + dr, c + dc
-
-				if 0 <= nr < self.size and 0 <= nc < self.size:
-					if state.grid[nr][nc] == player:
-						score += 2
-					elif state.grid[nr][nc] == opponent:
-						score += 1
-
-		return score
+	# 	return abs(score_player) + abs(score_opponent)
 
 
 	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool) -> float:
@@ -68,8 +50,8 @@ class GomokuAI:
 		alpha_original = alpha
 		beta_original = beta
 
-		if state.hash in self.tt:
-			entry = self.tt[state.hash]
+		if state.hash in self.transposition_table:
+			entry = self.transposition_table[state.hash]
 			if entry['depth'] >= depth:
 				if entry['flag'] == 'EXACT':
 					return entry['value']
@@ -81,14 +63,18 @@ class GomokuAI:
 				if alpha >= beta:
 					return entry['value']
 
-		if depth == 0:
+		if depth == 0 or abs(state.score) >= 1_000_000:
 			score = self.evaluateMove(state)
+			if abs(score) >= 1_000_000:
+				score += (depth * 1000) if score > 0 else -(depth * 1000)
 			return score
 
 		moves = self.getCandidateMoves(state)
 
 		def move_score(move):
-			score = self.quickEvaluate(state, move, maximizingPlayer)
+			r, c = move
+			# score = self.quickEvaluate(state, move, maximizingPlayer)
+			score = self.history_table[r][c][1 if maximizingPlayer else 2]
 
 			if move == self.killer_moves[depth][0]:
 				score += 1_000_000
@@ -97,7 +83,8 @@ class GomokuAI:
 
 			return score
 
-		moves = sorted(moves, key=move_score, reverse=True)[:15]
+		moves = sorted(moves, key=move_score, reverse=True)
+		moves = moves[:4]
 
 		if maximizingPlayer:
 			max_eval = float('-inf')
@@ -110,6 +97,7 @@ class GomokuAI:
 				alpha = max(alpha, evaluation)
 
 				if beta <= alpha:
+					self.history_table[r][c][1] += depth * depth
 					if self.killer_moves[depth][0] != (r, c):
 						self.killer_moves[depth][1] = self.killer_moves[depth][0]
 						self.killer_moves[depth][0] = (r, c)
@@ -128,6 +116,7 @@ class GomokuAI:
 				beta = min(beta, evaluation)
 
 				if beta <= alpha:
+					self.history_table[r][c][2] += depth * depth
 					if self.killer_moves[depth][0] != (r, c):
 						self.killer_moves[depth][1] = self.killer_moves[depth][0]
 						self.killer_moves[depth][0] = (r, c)
@@ -141,7 +130,7 @@ class GomokuAI:
 		elif best_eval >= beta_original:
 			flag = 'LOWERBOUND'
 
-		self.tt[state.hash] = {
+		self.transposition_table[state.hash] = {
 			'value': best_eval,
 			'depth': depth,
 			'flag': flag
@@ -152,7 +141,9 @@ class GomokuAI:
 
 	def findBestMove(self, state: GameState, player: int) -> tuple[int, int] | None:
 		"""Finds the best move for the given player using the minimax algorithm."""
-		state.debug_state()														# <== A SUPPRIMER
+		state.debugState()														# <== A SUPPRIMER
+
+		# self.history_table = [[[0.0 for _ in range(3)] for _ in range(self.size)] for _ in range(self.size)]
 
 		best_move = None
 
@@ -182,5 +173,6 @@ class GomokuAI:
 					best_score = score
 					best_move = (r, c)
 
-		print(f"Best move for player {player}: {best_move} with score {best_score}")		# <== A SUPPRIMER
+		print(f"Best move for player {player}: {best_move} with score {best_score}\n")		# <== A SUPPRIMER
+
 		return best_move

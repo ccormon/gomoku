@@ -9,6 +9,9 @@ class GameState:
 		self.hash = 0
 		self.score = 0
 
+		self.adj_counts = [[0 for _ in range(size)] for _ in range(size)]
+		self.candidates = set()
+
 		random.seed(42)
 
 		self.zobrist = [
@@ -18,37 +21,67 @@ class GameState:
 		]
 
 
-	def debug_state(self):														# <== A SUPPRIMER
+	def debugState(self):														# <== A SUPPRIMER
 		print("HASH:", self.hash)
 		for row in self.grid:
 			print(row)
 		print("-----")
 
 
-	def play(self, x, y, player):
-		old_score = self.evaluate_lines_around(x, y)
-		
+	def play(self, x: int, y: int, player: int):
+		"""Places a piece for the given player at (x, y) and updates the game state."""
+		old_score = self.evaluateLinesAround(x, y)
+
 		self.grid[x][y] = player
 		self.hash ^= self.zobrist[x][y][player]
-		
-		new_score = self.evaluate_lines_around(x, y)
-		
+
+		new_score = self.evaluateLinesAround(x, y)
 		self.score += (new_score - old_score)
 
+		if (x, y) in self.candidates:
+			self.candidates.remove((x, y))
 
-	def undo(self, x, y):
-		old_score = self.evaluate_lines_around(x, y)
-		
+		for dx in range(-2, 3):
+			for dy in range(-2, 3):
+				if dx == 0 and dy == 0:
+					continue
+				nx, ny = x + dx, y + dy
+
+				if 0 <= nx < self.size and 0 <= ny < self.size:
+					self.adj_counts[nx][ny] += 1
+
+					if self.grid[nx][ny] == 0 and self.adj_counts[nx][ny] == 1:
+						self.candidates.add((nx, ny))
+
+
+	def undo(self, x: int, y: int):
+		"""Removes a piece from (x, y) and updates the game state accordingly."""
+		old_score = self.evaluateLinesAround(x, y)
+
 		player = self.grid[x][y]
 		self.hash ^= self.zobrist[x][y][player]
 		self.grid[x][y] = 0
-		
-		new_score = self.evaluate_lines_around(x, y)
-		
+
+		new_score = self.evaluateLinesAround(x, y)
 		self.score += (new_score - old_score)
 
+		for dx in range(-2, 3):
+			for dy in range(-2, 3):
+				if dx == 0 and dy == 0:
+					continue
+				nx, ny = x + dx, y + dy
 
-	def get_lines_around(self, r: int, c: int) -> str:
+				if 0 <= nx < self.size and 0 <= ny < self.size:
+					self.adj_counts[nx][ny] -= 1
+
+					if self.adj_counts[nx][ny] == 0 and (nx, ny) in self.candidates:
+						self.candidates.remove((nx, ny))
+
+		if self.adj_counts[x][y] > 0:
+			self.candidates.add((x, y))
+
+
+	def getLinesAround(self, r: int, c: int) -> str:
 		directions = [(1, 0), (0, 1), (1, 1), (1, -1)]
 		chars = []
 
@@ -67,9 +100,9 @@ class GameState:
 		return "".join(chars)
 
 
-	def evaluate_lines_around(self, r: int, c: int) -> int:
+	def evaluateLinesAround(self, r: int, c: int) -> int:
 		"""Evaluates the board state and returns a score from the perspective of player 1."""
-		lines_str = self.get_lines_around(r, c)
+		lines_str = self.getLinesAround(r, c)
 		score = 0
 
 		for pattern in patterns_player1:
