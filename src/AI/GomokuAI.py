@@ -28,21 +28,21 @@ class GomokuAI:
 		return list(state.candidates)
 
 
-	# def quickEvaluate(self, state: GameState, move: tuple[int, int], maximizingPlayer: bool) -> float:
-	# 	"""Heuristic evaluation for move ordering in minimax (Beam Search aware)."""
-	# 	r, c = move
-	# 	player = 1 if maximizingPlayer else 2
+	def quickEvaluate(self, state: GameState, move: tuple[int, int], maximizingPlayer: bool) -> float:
+		"""Heuristic evaluation for move ordering in minimax (Beam Search aware)."""
+		r, c = move
+		player = 1 if maximizingPlayer else 2
 		
-	# 	state.grid[r][c] = player
-	# 	score_player = state.evaluateLinesAround(r, c)
-	# 	state.grid[r][c] = 0
+		state.grid[r][c] = player
+		score_player = state.evaluateLinesAround(r, c)
+		state.grid[r][c] = 0
 		
-	# 	opponent = 2 if player == 1 else 1
-	# 	state.grid[r][c] = opponent
-	# 	score_opponent = state.evaluateLinesAround(r, c)
-	# 	state.grid[r][c] = 0
+		opponent = 2 if player == 1 else 1
+		state.grid[r][c] = opponent
+		score_opponent = state.evaluateLinesAround(r, c)
+		state.grid[r][c] = 0
 
-	# 	return abs(score_player) + abs(score_opponent)
+		return abs(score_player) + 2 *abs(score_opponent)
 
 
 	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool) -> float:
@@ -74,17 +74,18 @@ class GomokuAI:
 		def move_score(move):
 			r, c = move
 			# score = self.quickEvaluate(state, move, maximizingPlayer)
-			score = self.history_table[r][c][1 if maximizingPlayer else 2]
+			quick_score = self.quickEvaluate(state, move, maximizingPlayer)
+			history_score = self.history_table[r][c][1 if maximizingPlayer else 2]
 
 			if move == self.killer_moves[depth][0]:
-				score += 1_000_000
+				history_score += 1_000_000
 			elif move == self.killer_moves[depth][1]:
-				score += 500_000
+				history_score += 500_000
 
-			return score
+			return quick_score + history_score
 
 		moves = sorted(moves, key=move_score, reverse=True)
-		moves = moves[:4]
+		moves = moves[:10]
 
 		if maximizingPlayer:
 			max_eval = float('-inf')
