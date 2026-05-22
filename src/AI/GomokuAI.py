@@ -42,7 +42,7 @@ class GomokuAI:
 		score_opponent = state.evaluateLinesAround(r, c)
 		state.grid[r][c] = 0
 
-		return abs(score_player) + 2 *abs(score_opponent)
+		return abs(score_player) + 2 * abs(score_opponent)
 
 
 	def minimax(self, state: GameState, depth: int, alpha: float, beta: float, maximizingPlayer: bool) -> float:
