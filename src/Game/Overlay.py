@@ -36,14 +36,17 @@ class Overlay:
         canvas = _Canvas(self.size)
 
         font_large = pg.font.SysFont(font_name, 70)
-        title = font_large.render(f"Victoire du Joueur {game.winner} !", True, text_color)
+        result = "Match nul !" if game.winner == 0 else f"Victoire de {game.playerName(game.winner)} !"
+        title = font_large.render(result, True, text_color)
         self.text_surface.blit(title, Position(canvas, (50, 25)).get(title.get_size()))
 
         font_medium = pg.font.SysFont(font_name, 45)
+        player1Average = game.averageMoveTime(1)
+        player2Average = game.averageMoveTime(2)
         lines = [
             (font_medium.render("Temps moyen pour jouer :", True, text_color), 40),
-            (font_medium.render(f"Joueur 1: {round(game.timerHistory[0][1], 2)}s", True, text_color), 50),
-            (font_medium.render(f"Joueur 2: {round(game.timerHistory[1][1], 2)}s", True, text_color), 60),
+            (font_medium.render(f"{game.playerName(1)}: {player1Average:.2f}s", True, text_color), 50),
+            (font_medium.render(f"{game.playerName(2)}: {player2Average:.2f}s", True, text_color), 60),
         ]
         for surface, y_pct in lines:
             self.text_surface.blit(surface, Position(canvas, (50, y_pct)).get(surface.get_size()))

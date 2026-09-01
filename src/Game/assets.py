@@ -12,6 +12,7 @@ class Assets:
     HOME = "assets/image/icon_home.png"
     #HOME_PRESSED = "assets/image/icon_home_pressed.png"
     SCORE = "assets/image/icon_score.png"
+    RETRY = "assets/others/_ui assets_purple_please/Purple please png/icon_go foward_normal.png"
     #SCORE_PRESSED = "assets/image/icon_score_pressed.png"
 
     MUSIC_ON = "assets/image/icon_music_on.png"

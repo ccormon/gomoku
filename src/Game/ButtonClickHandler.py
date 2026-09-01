@@ -30,6 +30,8 @@ class ButtonClickHandler:
 
     def scoreButtonClick(self, button: Button):
         self.soundEffects.play_sound("pop")
+        player1Average = self.game.averageMoveTime(1)
+        player2Average = self.game.averageMoveTime(2)
         # download a file with the score and metrics of the game
         with open("score.txt", "w") as f:
             f.write("Gomoku - Score et métriques de la partie\n")
@@ -37,7 +39,10 @@ class ButtonClickHandler:
             f.write(f"Mode de jeu : {'PVP' if self.game.mode == GameMode.PVP else 'PVE'}\n")
             f.write(f"Nombre de coups : {len(self.game.moveHistory)}\n")
             f.write(f"Score final : Joueur 1: {self.game.currentScore[1]} - Joueur 2: {self.game.currentScore[2]}\n")
-            f.write(f"Temps moyen pour jouer : Joueur 1: {round(self.game.timerHistory[0][1], 2)}s, Joueur 2: {round(self.game.timerHistory[1][1], 2)}s\n")
+            f.write(
+                f"Temps moyen pour jouer : {self.game.playerName(1)}: {player1Average:.2f}s, "
+                f"{self.game.playerName(2)}: {player2Average:.2f}s\n"
+            )
             f.write("Historique des coups :\n")
             for i, move in enumerate(self.game.moveHistory):
                 player, row, col = move
@@ -45,6 +50,12 @@ class ButtonClickHandler:
                 f.write(f"Joueur {player} a joué en ({row}, {col}) après {round(time, 2)}s\n")
         
         button.active = False
+
+
+    def retryButtonClick(self, button: Button):
+        self.soundEffects.play_sound("pop")
+        self.game.init(self.game.mode)
+        self.window.displayedWindow = DisplayedWindow.GAME_SCENE
 
 
     def musicButtonClick(self, button: ToggleButton):
@@ -89,8 +100,7 @@ class ButtonClickHandler:
     def helpButtonClick(self, button: Button):
         self.soundEffects.play_sound("pop")
         if self.game.mode == GameMode.PVP:
-            move = self.game.gomokuAI.findBestMove(self.game, False) # Using False for debug flag
-            self.game.proposedMove = move
+            self.game.proposedMove = self.game.findAIMove(self.game.activePlayer)
 
 
     def theme1ButtonClick(self, button: Button):

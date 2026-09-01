@@ -62,6 +62,9 @@ class Window:
         self.homeButton = Button(Assets.HOME, Position(self, (92, 5)), buttonClick.homeButtonClick)
         self.helpButton = Button(Assets.HELP, Position(self, (88, 5)), buttonClick.helpButtonClick)
         self.scoreButton = Button(Assets.SCORE, Position(self, (71, 69.5)), buttonClick.scoreButtonClick)
+        self.retryButton = Button(
+            Assets.RETRY, Position(self, (88, 5)), buttonClick.retryButtonClick
+        )
 
         self.musicButton = ToggleButton(Assets.MUSIC_ON, Assets.MUSIC_OFF, Position(self, (37, 28)), True, buttonClick.musicButtonClick)
         self.soundButton = ToggleButton(Assets.SOUND_ON, Assets.SOUND_OFF, Position(self, (37, 38)), True, buttonClick.soundButtonClick)
@@ -110,16 +113,39 @@ class Window:
 
         self.exitButton.draw(self.display)
         self.homeButton.draw(self.display)
-        if self.game.mode.name == "PVP":
+        if self.game.mode.name == "PVP" and self.displayedWindow == DisplayedWindow.GAME_SCENE:
             self.helpButton.draw(self.display)
 
         self.player1Icon.draw(self.display)
         self.player2Icon.draw(self.display)
 
+        self._drawPlayerPieces()
+
         # print scores
         font = pg.font.SysFont(self.themeManager.fontName, 90)
         score = font.render(f"{self.game.currentScore[1]} | {self.game.currentScore[2]}", True, (255, 255, 255))
         self.display.blit(score, Position(self, (50, 3)).get((score.get_width(), 0)))
+
+        infoFont = pg.font.SysFont(self.themeManager.fontName, 28)
+        metricColor = (255, 255, 255)
+        turnText = infoFont.render(f"Tours : {self.game.turnNumber}", True, metricColor)
+        self.display.blit(turnText, (30, 815))
+
+        if self.game.mode.name == "PVE":
+            timerText = infoFont.render(
+                f"Moyenne IA : {self.game.averageAITime:.3f} s", True, metricColor
+            )
+            self.display.blit(timerText, (30, 850))
+
+
+    def _drawPlayerPieces(self):
+        avatars = (self.player1Icon, self.player2Icon)
+        for player, avatar in enumerate(avatars, start=1):
+            stone = self.themeManager.getPiecesImage(player)
+            avatarRect = pg.Rect(avatar.originalPosition, avatar.size)
+            x = avatarRect.right + 10 if player == 1 else avatarRect.left - stone.get_width() - 10
+            y = avatarRect.centery - stone.get_height() // 2
+            self.display.blit(stone, (x, y))
 
 
     def _drawSettingsMenu(self):
@@ -166,6 +192,7 @@ class Window:
         self._drawGameScene()
         self.overlay.draw(self.display, self.game)
         self.scoreButton.draw(self.display)
+        self.retryButton.draw(self.display)
 
 
 # Public methods
@@ -215,3 +242,4 @@ class Window:
         self.homeButton.update(event)
         self.exitButton.update(event)
         self.scoreButton.update(event)
+        self.retryButton.update(event)

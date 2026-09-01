@@ -6,7 +6,9 @@ class SoundEffects:
     def __init__(self):
         self.active = True
         self.sounds = {
-            "pop": pg.mixer.Sound("assets/sound/pop_sound.mp3")}
+            "pop": pg.mixer.Sound("assets/sound/pop_sound.mp3"),
+            "piece": pg.mixer.Sound("assets/sound/piece_sound.mp3"),
+        }
 
 
     def play_sound(self, name: str):

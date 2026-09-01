@@ -1,7 +1,6 @@
 import pygame as pg
 from pygame.locals import *
 
-from src.Game.ThemeManager import ThemeManager
 from src.Game.Position import Position, PositionUnit, PositionReference
 
 
@@ -103,8 +102,29 @@ class Board:
                     player2Piece = window.themeManager.getPiecesImage(2)
                     pieceImage = player1Piece if self.boardState[row][col] == 1 else player2Piece
 
+                    if (row, col) == window.game.lastMove:
+                        pieceImage = self._tintPiece(
+                            pieceImage, window.themeManager.getAccentColor(), 0.42
+                        )
+
                     piecePos = Position.convert(pos, pieceImage.get_size(), PositionReference.CENTER)
                     window.display.blit(pieceImage, piecePos)
+
+
+    def _tintPiece(self, pieceImage, color, factor=0.75):
+        """Overlay a theme color with a 0..1 intensity factor."""
+        factor = max(0.0, min(1.0, factor))
+        alphaMask = pieceImage.copy()
+        alphaMask.fill((255, 255, 255), special_flags=pg.BLEND_RGB_ADD)
+
+        tint = pg.Surface(pieceImage.get_size(), pg.SRCALPHA)
+        tint.fill((*color, 255))
+        tint.blit(alphaMask, (0, 0), special_flags=pg.BLEND_RGBA_MULT)
+        tint.set_alpha(round(255 * factor))
+
+        result = pieceImage.copy()
+        result.blit(tint, (0, 0))
+        return result
 
 
     def _drawHoverPiece(self, window):
@@ -117,12 +137,12 @@ class Board:
             if game.boardState[r][c] == 0:
                 baseImage = window.themeManager.getPiecesImage(game.activePlayer)
                 
-                # Animate scale between 0.8 and 1.2
-                scale = 1.0 + 0.2 * math.sin(pg.time.get_ticks() / 200.0)
+                # A simple opaque pulse makes the PvP suggestion distinct from hover.
+                scale = 1.0 + 0.1 * math.sin(pg.time.get_ticks() / 180.0)
                 newSize = (int(baseImage.get_width() * scale), int(baseImage.get_height() * scale))
                 
                 hintImage = pg.transform.smoothscale(baseImage, newSize).convert_alpha()
-                hintImage.set_alpha(self.hoverAlpha // 2) # More transparent
+                hintImage.set_alpha(210)
                 
                 pos = self._getPosFromIndex(r, c, window)
                 piecePos = Position.convert(pos, hintImage.get_size(), PositionReference.CENTER)

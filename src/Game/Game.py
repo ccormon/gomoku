@@ -8,7 +8,6 @@ class GameMode(Enum):
     PVE = 2
 
 
-from src.Game.Window import DisplayedWindow
 from src.Game.Board import BoardParam
 from src.AI.GomokuAI import GomokuAI
 from src.Game.Timer import Timer
@@ -28,8 +27,10 @@ class Game:
         self.stonesLocations = []           # list of tuple for each piece on the board: (row, col)
         self.moveHistory = []               # list of (player, row, col) tuples for each move
         self.timerHistory = []              # list of (player, time) tuples for each move
+        self.aiTimerHistory = []            # actual AI search durations (not event-loop delay)
         self.timer = Timer()
         self.gomokuAI = GomokuAI()
+        self.lastAITime = 0.0
         self.isActive = True
         self.hoverCell = None
         self.proposedMove = None
@@ -38,6 +39,36 @@ class Game:
     @property
     def boardState(self):
         return self.state.grid
+
+
+    @property
+    def turnNumber(self):
+        """Number of completed rounds (one move by each player)."""
+        return len(self.moveHistory) // 2
+
+
+    @property
+    def lastMove(self):
+        return self.moveHistory[-1][1:] if self.moveHistory else None
+
+
+    @property
+    def averageAITime(self):
+        if not self.aiTimerHistory:
+            return 0.0
+        return sum(self.aiTimerHistory) / len(self.aiTimerHistory)
+
+
+    def averageMoveTime(self, player: int):
+        """Return a meaningful mean: search time for the AI, turn time for humans."""
+        if self.mode == GameMode.PVE and player == 2:
+            return self.averageAITime
+        times = [elapsed for owner, elapsed in self.timerHistory if owner == player]
+        return sum(times) / len(times) if times else 0.0
+
+
+    def playerName(self, player: int):
+        return "IA" if self.mode == GameMode.PVE and player == 2 else f"Joueur {player}"
 
 
     def _checkFiveInARow(self, row: int, col: int):
@@ -61,8 +92,69 @@ class Game:
                 return True
 
 
+    def _hasAnyFive(self, player: int):
+        for row in range(BoardParam.NUM_CASE):
+            for col in range(BoardParam.NUM_CASE):
+                if self.state.grid[row][col] != player:
+                    continue
+                for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:
+                    if all(
+                        0 <= row + step * dr < BoardParam.NUM_CASE
+                        and 0 <= col + step * dc < BoardParam.NUM_CASE
+                        and self.state.grid[row + step * dr][col + step * dc] == player
+                        for step in range(5)
+                    ):
+                        return True
+        return False
+
+
+    def _captureCells(self, row: int, col: int, player: int):
+        opponent = 2 if player == 1 else 1
+        captured = []
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
+            positions = [(row + step * dr, col + step * dc) for step in range(1, 4)]
+            if not all(0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE for r, c in positions):
+                continue
+            first, second, anchor = positions
+            if (self.state.grid[first[0]][first[1]] == opponent
+                    and self.state.grid[second[0]][second[1]] == opponent
+                    and self.state.grid[anchor[0]][anchor[1]] == player):
+                captured.extend((first, second))
+        return list(dict.fromkeys(captured))
+
+
+    def _canBreakAlignmentOrWinByCapture(self, alignedPlayer: int):
+        defender = 2 if alignedPlayer == 1 else 1
+        for row in range(BoardParam.NUM_CASE):
+            for col in range(BoardParam.NUM_CASE):
+                if self.state.grid[row][col] != 0:
+                    continue
+                captured = self._captureCells(row, col, defender)
+                if not captured:
+                    continue
+                self.state.grid[row][col] = defender
+                previous = [(r, c, self.state.grid[r][c]) for r, c in captured]
+                for r, c, _ in previous:
+                    self.state.grid[r][c] = 0
+                winsByCapture = self.currentScore[defender] + len(captured) >= 10
+                breaksAlignment = not self._hasAnyFive(alignedPlayer)
+                for r, c, value in previous:
+                    self.state.grid[r][c] = value
+                self.state.grid[row][col] = 0
+                if winsByCapture or breaksAlignment:
+                    return True
+        return False
+
+
     def _checkWinCondition(self, row: int, col: int):
-        if self._checkFiveInARow(row, col) or self.currentScore[self.activePlayer] >= 10:
+        if self.currentScore[self.activePlayer] >= 10:
+            self.winner = self.activePlayer
+            return True
+        opponent = 2 if self.activePlayer == 1 else 1
+        if self._hasAnyFive(opponent):
+            self.winner = opponent
+            return True
+        if self._checkFiveInARow(row, col) and not self._canBreakAlignmentOrWinByCapture(self.activePlayer):
             self.winner = self.activePlayer
             return True
         return False
@@ -72,10 +164,7 @@ class Game:
         if any(0 in row for row in self.state.grid):
             return False
 
-        if self.currentScore[1] == self.currentScore[2]:
-            self.winner = 0
-        else:
-            self.winner = max(self.currentScore, key=self.currentScore.get)
+        self.winner = 0
         return True
 
 
@@ -106,39 +195,72 @@ class Game:
 
 
     def _checkDoubleThree(self, row: int, col: int):
-        patterns = [".XXX..", "..XXX.", ".X.XX.", ".XX.X."]
-        free_three_count = 0
+        return self._checkDoubleThreeForPlayer(row, col, self.activePlayer)
 
+
+    def _checkDoubleThreeForPlayer(self, row: int, col: int, player: int):
+        if self.state.grid[row][col] != 0 or self._captureCells(row, col, player):
+            return False
+        freeThreeCount = 0
         for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:
-            line_str = ""
-            for i in range(-4, 5):
-                r, c = row + i * dr, col + i * dc
-                if i == 0:
-                    line_str += "X"
-                elif 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE:
-                    val = self.state.grid[r][c]
-                    if val == 0:
-                        line_str += "."
-                    elif val == self.activePlayer:
-                        line_str += "X"
-                    else:
-                        line_str += "O"
-                else:
-                    line_str += "O"
-
-            if any(p in line_str for p in patterns):
-                free_three_count += 1
-
-        return free_three_count >= 2
+            values = []
+            for offset in range(-5, 6):
+                r, c = row + offset * dr, col + offset * dc
+                values.append(self.state.grid[r][c] if 0 <= r < BoardParam.NUM_CASE and 0 <= c < BoardParam.NUM_CASE else 3)
+            values[5] = player
+            directionHasThree = False
+            for completion in range(1, 10):
+                if completion == 5 or values[completion] != 0:
+                    continue
+                values[completion] = player
+                for start in range(6):
+                    if (values[start] == 0 and values[start + 5] == 0
+                            and all(values[cell] == player for cell in range(start + 1, start + 5))
+                            and start < 5 < start + 5
+                            and start < completion < start + 5):
+                        directionHasThree = True
+                        break
+                values[completion] = 0
+                if directionHasThree:
+                    break
+            freeThreeCount += directionHasThree
+        return freeThreeCount >= 2
 
 
     def _checkValidMove(self, row: int, col: int):
+        if not (0 <= row < BoardParam.NUM_CASE and 0 <= col < BoardParam.NUM_CASE):
+            return False
         if self.state.grid[row][col] != 0 or self._checkDoubleThree(row, col):
             return False
         return True
 
 
+    def findAIMove(self, player: int):
+        self.lastAITime = 0.0
+        try:
+            move = self.gomokuAI.findBestMove(self.state, player, self.currentScore)
+            self.lastAITime = self.gomokuAI.last_search.elapsed_seconds
+            if move is not None and self._checkValidMove(move[0], move[1]):
+                return move
+        except (MemoryError, RuntimeError, ValueError):
+            pass
+
+        center = BoardParam.NUM_CASE // 2
+        candidates = (
+            (row, col)
+            for row in range(BoardParam.NUM_CASE)
+            for col in range(BoardParam.NUM_CASE)
+        )
+        return min(
+            (move for move in candidates if self._checkValidMove(move[0], move[1])),
+            key=lambda move: abs(move[0] - center) + abs(move[1] - center),
+            default=None,
+        )
+
+
     def _endGame(self, window):
+        from src.Game.Window import DisplayedWindow
+
         '''
         # print winner and scores + mean time per move for each player
         print(f"Game Over! Winner: {'Tie' if self.winner == 0 else 'Player ' + str(self.winner)}")
@@ -154,6 +276,7 @@ class Game:
     def _handleMove(self, row: int, col: int, window):
         if self._checkValidMove(row, col):
             self._placePiece(row, col)
+            window.soundEffects.play_sound("piece")
             self._handleCapture(row, col)
             self.moveHistory.append((self.activePlayer, row, col))
             self.timerHistory.append((self.activePlayer, self.timer.getElapsedTime()))
@@ -177,30 +300,21 @@ class Game:
         self.stonesLocations = []
         self.moveHistory = []
         self.timerHistory = []
+        self.aiTimerHistory = []
         self.hoverCell = None
         self.proposedMove = None
+        self.lastAITime = 0.0
         self.timer.reset()
         self.timer.start()
 
 
-    def test_undo(self, window):                                                # <== A SUPPRIMER
-        print("=== TEST UNDO ===")
-
-        self._handleMove(7, 7, window)
-        self.state.debugState()
-
-        self.state.undo(7, 7)
-        self.state.grid[7][7] = 0
-
-        print("After undo:")
-        self.state.debugState()
-
-
     def update(self, event: pg.event.Event, window):
         if self.mode == GameMode.PVE and self.activePlayer == 2:
-            # TODO: maybe start AI timer here if too slow
-            AIMove = self.gomokuAI.findBestMove(self.state, 2)
-            self._handleMove(AIMove[0], AIMove[1], window)
+            AIMove = self.findAIMove(2)
+            if AIMove is not None:
+                self.aiTimerHistory.append(self.lastAITime)
+                self._handleMove(AIMove[0], AIMove[1], window)
+            return
 
         if event.type == MOUSEMOTION:
             row, col = window.board.getIndexFromPos(window, event.pos)
@@ -213,7 +327,3 @@ class Game:
             gameMove = window.board.getIndexFromPos(window, event.pos)
             if gameMove[0] is not None and gameMove[1] is not None:
                 self._handleMove(gameMove[0], gameMove[1], window)
-
-        if event.type == pg.KEYDOWN:                                            # <== A SUPPRIMER
-            if event.key == pg.K_u:
-                self.test_undo(window)
