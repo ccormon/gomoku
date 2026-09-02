@@ -29,6 +29,12 @@ Le moteur C++ sépare quatre responsabilités :
 - l'évaluateur recalcule uniquement les lignes touchées et utilise 28 motifs tactiques compilés dans une table de lookup ;
 - `Engine` effectue un Min-Max sous forme Negamax avec alpha-bêta, approfondissement, table de transposition, killer moves et historique.
 
+## Explications détaillées
+
+- [Implémentation des règles](explanations/01_regles.md)
+- [Heuristique d'évaluation](explanations/02_heuristique.md)
+- [Optimisations du moteur](explanations/03_optimisations.md)
+
 L'ABI publique se trouve dans `include/gomoku/c_api.h`. Un moteur opaque conserve sa table de transposition entre les tours. Chaque résultat expose le coup, le score, la profondeur entièrement terminée, le nombre de nœuds et le temps natif. Aucune exception C++ ne traverse cette frontière.
 
 ## Règles implémentées
