@@ -629,6 +629,150 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
         return result;
     }
 
+    auto finishTacticalMove = [&](Move move, int score) {
+        result.move = move;
+        result.score = score;
+        result.elapsedMicroseconds = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - started).count()
+        );
+        return result;
+    };
+    auto isImmediateWin = [](Board &position, Move move, Player side) {
+        MoveUndo undo;
+        if (!position.play(move, side, undo)) return false;
+        const bool wins = position.isWinningMove(move, side);
+        position.undo(undo);
+        return wins;
+    };
+    auto createsFive = [](Board &position, Move move, Player side) {
+        MoveUndo undo;
+        if (!position.play(move, side, undo)) return false;
+        const bool aligned = position.hasFive(side);
+        position.undo(undo);
+        return aligned;
+    };
+
+    // Les tactiques en un coup ne doivent pas dépendre de la profondeur
+    // atteinte ni de l'ordre des coups. C'est particulièrement important avec
+    // un petit budget, où une recherche interrompue conserverait autrement le
+    // premier coup heuristique disponible.
+    for (Move move : legal) {
+        if (isImmediateWin(board, move, player)) {
+            return finishTacticalMove(move, WinScore);
+        }
+    }
+
+    // Même lorsqu'un cinq peut encore être cassé par une capture, il force
+    // l'adversaire à répondre à cet alignement. Ne pas laisser le préfiltre
+    // défensif remplacer cette continuation offensive par le blocage du quatre
+    // adverse : l'attaque du joueur au trait doit être examinée en premier.
+    for (Move move : legal) {
+        if (createsFive(board, move, player)) {
+            return finishTacticalMove(move, WinScore - 1);
+        }
+    }
+
+    const Player enemy = opponent(player);
+    if (board.hasFive(enemy)) {
+        // Le front accorde exactement ce tour pour casser un cinq encore
+        // capturable. Toute autre réponse valide immédiatement la victoire
+        // adverse, donc cette défense doit elle aussi précéder la recherche.
+        for (Move defense : legal) {
+            MoveUndo defenseUndo;
+            board.play(defense, player, defenseUndo);
+            const bool breaksExistingFive = !board.hasFive(enemy);
+            board.undo(defenseUndo);
+            if (breaksExistingFive) {
+                return finishTacticalMove(defense, 0);
+            }
+        }
+    }
+    std::vector<Move> enemyWinningMoves;
+    for (Move move : board.legalMoves(enemy)) {
+        if (isImmediateWin(board, move, enemy)) {
+            enemyWinningMoves.push_back(move);
+        }
+    }
+    if (!enemyWinningMoves.empty()) {
+        auto preventsImmediateLoss = [&](Move defense) {
+            MoveUndo defenseUndo;
+            if (!board.play(defense, player, defenseUndo)) return false;
+            bool safe = true;
+            for (Move reply : board.legalMoves(enemy)) {
+                if (isImmediateWin(board, reply, enemy)) {
+                    safe = false;
+                    break;
+                }
+            }
+            board.undo(defenseUndo);
+            return safe;
+        };
+
+        // Essayer d'abord les cases gagnantes adverses donne une réponse
+        // immédiate au cas courant d'un quatre fermé à une extrémité.
+        for (Move threat : enemyWinningMoves) {
+            if (board.isLegalMove(threat, player) && preventsImmediateLoss(threat)) {
+                return finishTacticalMove(threat, 0);
+            }
+        }
+        // Une capture jouée ailleurs peut parfois casser l'alignement. On la
+        // détecte aussi au lieu de supposer que poser sur la menace est la
+        // seule défense possible.
+        for (Move defense : legal) {
+            if (std::find(enemyWinningMoves.begin(), enemyWinningMoves.end(), defense) != enemyWinningMoves.end()) {
+                continue;
+            }
+            if (preventsImmediateLoss(defense)) {
+                return finishTacticalMove(defense, 0);
+            }
+        }
+    }
+
+    // Un alignement de cinq encore cassable par capture n'est pas signalé
+    // comme une victoire immédiate : le défenseur aura un dernier coup pour
+    // le briser. Il reste toutefois dangereux de laisser l'adversaire le
+    // former, car ce prochain coup devient alors une défense forcée. Traiter
+    // aussi cette menace avant la recherche évite qu'une extension offensive
+    // mieux notée soit conservée à l'expiration du budget.
+    std::vector<Move> enemyAlignmentMoves;
+    for (Move move : board.legalMoves(enemy)) {
+        if (createsFive(board, move, enemy)) {
+            enemyAlignmentMoves.push_back(move);
+        }
+    }
+    if (!enemyAlignmentMoves.empty()) {
+        auto preventsAlignment = [&](Move defense) {
+            MoveUndo defenseUndo;
+            if (!board.play(defense, player, defenseUndo)) return false;
+            bool safe = true;
+            for (Move reply : board.legalMoves(enemy)) {
+                if (createsFive(board, reply, enemy)) {
+                    safe = false;
+                    break;
+                }
+            }
+            board.undo(defenseUndo);
+            return safe;
+        };
+
+        // Préférer le blocage direct lorsqu'il suffit. Une capture qui
+        // démantèle la ligne est également acceptée par le second passage.
+        for (Move threat : enemyAlignmentMoves) {
+            if (board.isLegalMove(threat, player) && preventsAlignment(threat)) {
+                return finishTacticalMove(threat, 0);
+            }
+        }
+        for (Move defense : legal) {
+            if (std::find(enemyAlignmentMoves.begin(), enemyAlignmentMoves.end(), defense)
+                    != enemyAlignmentMoves.end()) {
+                continue;
+            }
+            if (preventsAlignment(defense)) {
+                return finishTacticalMove(defense, 0);
+            }
+        }
+    }
+
     // Conserver des résultats intermédiaires solides lorsque la position est
     // trop complexe pour terminer directement la recherche tactique profondeur 10.
     std::vector<int> depths{1, 2, 3, 4, 10};

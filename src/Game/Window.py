@@ -129,13 +129,19 @@ class Window:
         infoFont = pg.font.SysFont(self.themeManager.fontName, 28)
         metricColor = (255, 255, 255)
         turnText = infoFont.render(f"Tours : {self.game.turnNumber}", True, metricColor)
-        self.display.blit(turnText, (30, 815))
+        self.display.blit(turnText, (40, 780))
 
         if self.game.mode.name == "PVE":
             timerText = infoFont.render(
-                f"Moyenne IA : {self.game.averageAITime:.3f} s", True, metricColor
+                f"Temps du coup IA : {self.game.lastAITime:.3f} s", True, metricColor
             )
-            self.display.blit(timerText, (30, 850))
+            self.display.blit(timerText, (40, 815))
+
+            displayedDepth = "-" if self.game.lastAIDepth is None else self.game.lastAIDepth
+            depthText = infoFont.render(
+                f"Profondeur du coup IA : {displayedDepth}", True, metricColor
+            )
+            self.display.blit(depthText, (40, 850))
 
 
     def _drawPlayerPieces(self):

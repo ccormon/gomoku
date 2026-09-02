@@ -191,6 +191,88 @@ void testSearch() {
     Board defense = makeBoard(cells);
     const auto blocking = engine.findBestMove(defense, Player::one, 450);
     expect(blocking.move == moveAt(9, 9), "search blocks an immediate loss");
+
+    cells = {};
+    for (int col = 5; col <= 8; ++col) cells[moveAt(12, col).index] = 2;
+    cells[moveAt(12, 4).index] = 1;
+    for (int col = 5; col <= 7; ++col) cells[moveAt(4, col).index] = 1;
+    Board urgentDefense = makeBoard(cells);
+    const auto urgentBlocking = engine.findBestMove(urgentDefense, Player::one, 1);
+    expect(urgentBlocking.move == moveAt(12, 9),
+        "an immediate opposing win is blocked before extending an attacking three");
+
+    // Position réelle après les neuf premiers coups de la partie signalée.
+    // J2 doit compléter sa colonne en (14, 9), avant de considérer le quatre
+    // adverse en colonne 11. Ce cinq touche le bord inférieur et ne peut pas
+    // être cassé par une capture.
+    cells = {};
+    for (int row : {15, 16, 17, 18}) cells[moveAt(row, 9).index] = 2;
+    for (int row : {15, 16, 17, 18}) cells[moveAt(row, 11).index] = 1;
+    cells[moveAt(17, 10).index] = 1;
+    Board reportedImmediateWin = makeBoard(cells);
+    for (int budget : {1, 10, 100, 450}) {
+        const auto winningMove = engine.findBestMove(reportedImmediateWin, Player::two, budget);
+        expect(winningMove.move == moveAt(14, 9),
+            "reported position takes its own immediate win before blocking");
+    }
+    MoveUndo winningUndo;
+    reportedImmediateWin.play(moveAt(14, 9), Player::two, winningUndo);
+    expect(reportedImmediateWin.isWinningState(Player::two),
+        "reported fifth stone is an immediate, unbreakable win");
+
+    // Les deux joueurs ont un quatre. Le cinq de J2 en (14, 7) est cassable
+    // par la capture de J1 en (17, 6), mais il doit être joué avant le blocage
+    // défensif en (14, 9), puisqu'il impose cette réponse à J1.
+    cells = {};
+    for (int row : {15, 16, 17, 18}) {
+        cells[moveAt(row, 9).index] = 1;
+        cells[moveAt(row, 7).index] = 2;
+    }
+    cells[moveAt(17, 8).index] = 2;
+    Board competingFours = makeBoard(cells);
+    MoveUndo breakableFiveUndo;
+    competingFours.play(moveAt(14, 7), Player::two, breakableFiveUndo);
+    expect(competingFours.hasFive(Player::two),
+        "offensive continuation completes player two's five");
+    expect(!competingFours.isWinningState(Player::two),
+        "player two's five can still be broken by capture");
+    expect(competingFours.isCapturingMove(moveAt(17, 6), Player::one),
+        "player one has the reported capture reply");
+    competingFours.undo(breakableFiveUndo);
+    for (int budget : {1, 10, 100, 450}) {
+        const auto offensiveMove = engine.findBestMove(competingFours, Player::two, budget);
+        expect(offensiveMove.move == moveAt(14, 7),
+            "own breakable five is preferred to blocking the opposing four");
+    }
+
+    // Variante avec cinq cassable : J1 a quatre pierres verticales et J2 peut
+    // capturer deux pierres en (17, 10). L'existence de cette capture ne doit
+    // pas faire passer l'extension offensive (15, 7) avant le blocage.
+    cells = {};
+    for (int row : {15, 16, 17, 18}) cells[moveAt(row, 9).index] = 1;
+    cells[moveAt(17, 8).index] = 1;
+    for (int row : {16, 17, 18}) cells[moveAt(row, 7).index] = 2;
+    cells[moveAt(5, 9).index] = 2;
+    Board reportedCapturePosition = makeBoard(cells);
+    expect(reportedCapturePosition.isCapturingMove(moveAt(17, 10), Player::two),
+        "reported position contains the defensive capture");
+    for (int budget : {1, 10, 100, 450}) {
+        const auto reportedDefense = engine.findBestMove(reportedCapturePosition, Player::two, budget);
+        expect(reportedDefense.move == moveAt(14, 9),
+            "reported four is blocked consistently even when a defensive capture exists");
+    }
+
+    MoveUndo alignmentUndo;
+    reportedCapturePosition.play(moveAt(14, 9), Player::one, alignmentUndo);
+    expect(reportedCapturePosition.hasFive(Player::one),
+        "reported continuation creates the expected breakable five");
+    const auto lastChanceCapture = engine.findBestMove(reportedCapturePosition, Player::two, 1);
+    expect(reportedCapturePosition.isCapturingMove(lastChanceCapture.move, Player::two),
+        "an existing breakable five is answered with a capture");
+    MoveUndo captureUndo;
+    reportedCapturePosition.play(lastChanceCapture.move, Player::two, captureUndo);
+    expect(!reportedCapturePosition.hasFive(Player::one),
+        "the last-chance capture actually breaks the existing five");
 }
 
 } // namespace

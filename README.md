@@ -46,6 +46,8 @@ La détection d'un trois libre ne repose pas uniquement sur une chaîne littéra
 
 Les coups candidats se trouvent à deux intersections au maximum d'une pierre existante. Avant la réduction sélective, ils sont ordonnés selon les priorités suivantes : victoire, blocage d'une victoire, capture, coup de transposition, killer move, historique et score local. Le potentiel tactique adverse reçoit un poids double : un quatre ouvert ou un trois cassé à bloquer ne peut ainsi pas être masqué par une attaque secondaire.
 
+Avant cette recherche, le moteur traite exhaustivement les tactiques forcées en un coup. Il privilégie d'abord son propre alignement de cinq, même lorsque celui-ci impose encore une réponse de capture, puis traite les menaces adverses. Il bloque aussi un alignement adverse de cinq encore cassable : bien qu'il ne gagne pas immédiatement selon les règles, il imposerait une capture au tour suivant et ne doit pas être ignoré en l'absence d'une continuation offensive équivalente.
+
 La recherche termine rapidement les profondeurs 1 à 4, puis une recherche sélective à 10 plis. Elle continue ensuite à 11 plis et au-delà jusqu'au budget par défaut de 450 ms. Les niveaux profonds comparent 16 coups à la racine, 6 réponses adverses, puis 3 coups sur les niveaux tactiques suivants. Le meilleur résultat d'une profondeur complètement terminée est conservé si l'horloge expire.
 
 Le premier coup utilise directement le centre comme coup d'ouverture. Sa profondeur annoncée vaut donc honnêtement zéro plutôt que de prétendre avoir exploré un arbre inutilement symétrique.

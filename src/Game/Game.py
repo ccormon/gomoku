@@ -31,6 +31,7 @@ class Game:
         self.timer = Timer()
         self.gomokuAI = GomokuAI()
         self.lastAITime = 0.0
+        self.lastAIDepth = None
         self.isActive = True
         self.hoverCell = None
         self.proposedMove = None
@@ -240,6 +241,7 @@ class Game:
         try:
             move = self.gomokuAI.findBestMove(self.state, player, self.currentScore)
             self.lastAITime = self.gomokuAI.last_search.elapsed_seconds
+            self.lastAIDepth = self.gomokuAI.last_search.completed_depth
             if move is not None and self._checkValidMove(move[0], move[1]):
                 return move
         except (MemoryError, RuntimeError, ValueError):
@@ -304,6 +306,7 @@ class Game:
         self.hoverCell = None
         self.proposedMove = None
         self.lastAITime = 0.0
+        self.lastAIDepth = None
         self.timer.reset()
         self.timer.start()
 
