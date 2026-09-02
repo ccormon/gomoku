@@ -25,9 +25,18 @@ enum GomokuStatus {
     GOMOKU_INTERNAL_ERROR = 4
 };
 
+/** Create a reusable engine instance, or return NULL on allocation failure. */
 void *gomoku_engine_create(void);
+
+/** Destroy an engine created by gomoku_engine_create(). */
 void gomoku_engine_destroy(void *engine);
 
+/**
+ * Search a row-major 19 x 19 board within the requested time budget.
+ *
+ * Capture counters contain captured stones, not captured pairs. The result
+ * structure is initialized even when the function returns an error status.
+ */
 int gomoku_find_best_move(
     void *engine,
     const uint8_t *cells,

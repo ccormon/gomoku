@@ -20,6 +20,8 @@ class _NativeSearchResult(ctypes.Structure):
 
 @dataclass(frozen=True)
 class SearchMetrics:
+    """Metrics reported by the native engine for its latest search."""
+
     score: int = 0
     completed_depth: int = 0
     nodes: int = 0
@@ -28,10 +30,14 @@ class SearchMetrics:
 
 
 class GomokuAI:
+    """Thread-safe Python wrapper around the native Gomoku engine."""
+
     BOARD_SIZE = 19
     DEFAULT_BUDGET_MS = 450
 
     def __init__(self, library_path: str | Path | None = None):
+        """Load the native library and create one reusable engine instance."""
+
         project_root = Path(__file__).resolve().parents[2]
         path = Path(library_path) if library_path else project_root / "build" / "libgomoku_ai.so"
         if not path.exists():
@@ -46,6 +52,8 @@ class GomokuAI:
         self.last_search = SearchMetrics()
 
     def _configure_signatures(self):
+        """Declare the native C signatures used by ctypes."""
+
         self._library.gomoku_engine_create.argtypes = []
         self._library.gomoku_engine_create.restype = ctypes.c_void_p
         self._library.gomoku_engine_destroy.argtypes = [ctypes.c_void_p]
@@ -63,6 +71,8 @@ class GomokuAI:
         self._library.gomoku_find_best_move.restype = ctypes.c_int
 
     def close(self):
+        """Release the native engine; repeated calls are safe."""
+
         engine = getattr(self, "_engine", None)
         if engine:
             self._library.gomoku_engine_destroy(engine)
@@ -75,6 +85,22 @@ class GomokuAI:
             pass
 
     def findBestMove(self, state, player: int, captures=None, budget_ms: int = DEFAULT_BUDGET_MS):
+        """Return the best legal ``(row, column)`` move for ``player``.
+
+        Args:
+            state: Object exposing a 19 x 19 ``grid`` of values 0, 1, and 2.
+            player: Player to move, either 1 or 2.
+            captures: Mapping of player numbers to captured-stone counts.
+            budget_ms: Maximum native search time in milliseconds.
+
+        Returns:
+            The selected coordinates, or ``None`` when no legal move exists.
+
+        Raises:
+            ValueError: If the player or board representation is invalid.
+            RuntimeError: If the native engine reports an error.
+        """
+
         if player not in (1, 2):
             raise ValueError("player doit valoir 1 ou 2")
         if len(state.grid) != self.BOARD_SIZE or any(len(row) != self.BOARD_SIZE for row in state.grid):

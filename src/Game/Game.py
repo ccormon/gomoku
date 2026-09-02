@@ -50,11 +50,15 @@ class Game:
 
     @property
     def lastMove(self):
+        """Return the latest ``(row, column)`` pair, or ``None``."""
+
         return self.moveHistory[-1][1:] if self.moveHistory else None
 
 
     @property
     def averageAITime(self):
+        """Return the mean native AI search duration for this game."""
+
         if not self.aiTimerHistory:
             return 0.0
         return sum(self.aiTimerHistory) / len(self.aiTimerHistory)
@@ -73,6 +77,8 @@ class Game:
 
 
     def _checkFiveInARow(self, row: int, col: int):
+        """Check whether the active player's latest stone belongs to a five."""
+
         for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:  # horizontal, vertical, diagonal down-right, diagonal down-left
             count = 1  # count the piece just placed
             # check in the positive direction
@@ -94,6 +100,8 @@ class Game:
 
 
     def _hasAnyFive(self, player: int):
+        """Return whether the player has five consecutive stones anywhere."""
+
         for row in range(BoardParam.NUM_CASE):
             for col in range(BoardParam.NUM_CASE):
                 if self.state.grid[row][col] != player:
@@ -110,6 +118,8 @@ class Game:
 
 
     def _captureCells(self, row: int, col: int, player: int):
+        """Return opposing cells captured by a hypothetical move."""
+
         opponent = 2 if player == 1 else 1
         captured = []
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
@@ -125,6 +135,12 @@ class Game:
 
 
     def _canBreakAlignmentOrWinByCapture(self, alignedPlayer: int):
+        """Check whether the opponent has a legal capture reply to a five.
+
+        A reply is valid when it removes every five-stone alignment or raises
+        the defender's capture count to ten stones.
+        """
+
         defender = 2 if alignedPlayer == 1 else 1
         for row in range(BoardParam.NUM_CASE):
             for col in range(BoardParam.NUM_CASE):
@@ -148,6 +164,8 @@ class Game:
 
 
     def _checkWinCondition(self, row: int, col: int):
+        """Update the winner after the active player's completed move."""
+
         if self.currentScore[self.activePlayer] >= 10:
             self.winner = self.activePlayer
             return True
@@ -162,6 +180,8 @@ class Game:
 
 
     def _checkTieCondition(self):
+        """Declare a tie when the board is full and no player has won."""
+
         if any(0 in row for row in self.state.grid):
             return False
 
@@ -175,6 +195,8 @@ class Game:
 
 
     def _handleCapture(self, row: int, col: int):
+        """Remove every pair captured by the active player's latest stone."""
+
         opponent = 2 if self.activePlayer == 1 else 1
         for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:  # all 8 directions
             r1, c1 = row + dr, col + dc
@@ -200,6 +222,8 @@ class Game:
 
 
     def _checkDoubleThreeForPlayer(self, row: int, col: int, player: int):
+        """Return whether a non-capturing move creates two open threes."""
+
         if self.state.grid[row][col] != 0 or self._captureCells(row, col, player):
             return False
         freeThreeCount = 0
@@ -229,6 +253,8 @@ class Game:
 
 
     def _checkValidMove(self, row: int, col: int):
+        """Validate bounds, occupancy, and the double-three restriction."""
+
         if not (0 <= row < BoardParam.NUM_CASE and 0 <= col < BoardParam.NUM_CASE):
             return False
         if self.state.grid[row][col] != 0 or self._checkDoubleThree(row, col):
@@ -237,6 +263,12 @@ class Game:
 
 
     def findAIMove(self, player: int):
+        """Ask the native engine for a move and record its latest metrics.
+
+        If the engine fails or returns an invalid move, the closest legal move
+        to the board center is used as a safe fallback.
+        """
+
         self.lastAITime = 0.0
         try:
             move = self.gomokuAI.findBestMove(self.state, player, self.currentScore)
@@ -276,6 +308,8 @@ class Game:
 
 
     def _handleMove(self, row: int, col: int, window):
+        """Apply one legal move and complete all end-of-turn updates."""
+
         if self._checkValidMove(row, col):
             self._placePiece(row, col)
             window.soundEffects.play_sound("piece")
