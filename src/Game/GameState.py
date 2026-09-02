@@ -21,7 +21,7 @@ class GameState:
         ]
 
 
-    def debugState(self):														# <== A SUPPRIMER
+    def debugState(self):														# TODO: remove this debug helper.
         print("HASH:", self.hash)
         for row in self.grid:
             print(row)

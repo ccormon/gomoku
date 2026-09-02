@@ -8,8 +8,7 @@ class Pattern:
         return len(self.pattern)
 
 
-# Conservés pour la compatibilité de GameState. L'évaluation utilisée par l'IA
-# vit désormais dans le moteur C++.
+# Kept for GameState compatibility. The AI evaluation now lives in C++.
 patterns_player1 = []
 patterns_player2 = []
 patterns_freethree_player1 = []

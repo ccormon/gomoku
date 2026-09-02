@@ -32,6 +32,7 @@ struct HeuristicPattern {
 };
 
 
+// Larger tactical patterns deliberately dominate combinations of small ones.
 constexpr std::array<HeuristicPattern, 28> HeuristicPatterns{{
     {"11111", 2'000'000},
     {"011110", 100'000},
@@ -64,6 +65,7 @@ constexpr std::array<HeuristicPattern, 28> HeuristicPatterns{{
 }};
 
 const std::array<std::array<int, 1U << 14U>, 8> &heuristicScoreTable() {
+    // Encode every pattern once so line evaluation only performs array lookups.
     static const std::array<std::array<int, 1U << 14U>, 8> table = [] {
         std::array<std::array<int, 1U << 14U>, 8> result{};
         for (const HeuristicPattern &pattern : HeuristicPatterns) {
@@ -119,6 +121,7 @@ uint64_t Board::sideKey(Player player) {
 }
 
 void Board::initializeLines() {
+    // A cell belongs to at most one line on each of the four axes.
     for (auto &ids : cellLines_) {
         ids.fill(-1);
     }
@@ -155,6 +158,7 @@ void Board::initializeLines() {
 }
 
 void Board::rebuildDerivedState() {
+    // Build all cached data once when importing a position from Python.
     stones_ = {};
     hash_ = captureKey(Player::one, captures_[0]) ^ captureKey(Player::two, captures_[1]);
     for (int index = 0; index < CellCount; ++index) {
@@ -185,7 +189,7 @@ uint64_t Board::hash(Player sideToMove) const {
 }
 
 int Board::evaluation(Player perspective) const {
-    // Une paire capturée vaut 30 000, soit 15 000 par pierre.
+    // One captured pair is worth 30,000: 15,000 per removed stone.
     const int captureScore = (captures_[0] - captures_[1]) * 15'000;
     const int score = totalScore_ + captureScore;
     return perspective == Player::one ? score : -score;
@@ -198,6 +202,7 @@ int Board::scoreLine(const Line &line) const {
         const int sign = player == Player::one ? 1 : -1;
         const uint8_t stone = static_cast<uint8_t>(player);
         std::array<uint8_t, BoardSize + 2> encoded{};
+        // Board edges and opposing stones share the same blocking code.
         encoded[0] = 3;
         for (int position = 0; position < line.length; ++position) {
             const uint8_t actual = cells_[line.cells[position]];
@@ -206,6 +211,7 @@ int Board::scoreLine(const Line &line) const {
         encoded[line.length + 1] = 3;
 
         const int encodedLength = line.length + 2;
+        // Pattern codes are built incrementally in base four.
         for (int start = 0; start < encodedLength; ++start) {
             int code = 0;
             const int maxLength = std::min(7, encodedLength - start);
@@ -232,6 +238,7 @@ void Board::setCell(Move move, Player player) {
 }
 
 void Board::refreshLines(const std::vector<Move> &changed) {
+    // Captures may touch several cells, so mark each affected line only once.
     std::array<bool, MaxLines> dirty{};
     for (Move move : changed) {
         for (int id : cellLines_[move.index]) {
@@ -272,6 +279,7 @@ bool Board::isCapturingMove(Move move, Player player) const {
 }
 
 bool Board::directionHasOpenThree(Move move, Player player, int dr, int dc) const {
+    // The wide window also detects broken threes and blocked continuations.
     std::array<uint8_t, 11> values{};
     for (int offset = -5; offset <= 5; ++offset) {
         const int row = move.row() + offset * dr;
@@ -285,6 +293,7 @@ bool Board::directionHasOpenThree(Move move, Player player, int dr, int dc) cons
             continue;
         }
         values[completion] = static_cast<uint8_t>(player);
+        // A real open three must have a continuation into an open four.
         for (int start = 0; start + 5 < 11; ++start) {
             if (values[start] != 0 || values[start + 5] != 0) {
                 continue;
@@ -334,6 +343,7 @@ bool Board::play(Move move, Player player, MoveUndo &undo) {
     std::vector<Move> changed{move};
     setCell(move, player);
     const Player enemy = opponent(player);
+    // One placement can capture independent pairs in several directions.
     for (const auto &[dr, dc] : Directions) {
         const int row = move.row();
         const int col = move.col();
@@ -361,6 +371,7 @@ bool Board::play(Move move, Player player, MoveUndo &undo) {
 }
 
 void Board::undo(const MoveUndo &undo) {
+    // Search reuses one board, so every cached field must be restored exactly.
     std::vector<Move> changed{undo.move};
     setCell(undo.move, Player::none);
     const Player enemy = opponent(undo.player);
@@ -403,6 +414,7 @@ bool Board::hasFiveThrough(Move move, Player player) const {
 
 bool Board::hasBreakingCapture(Player alignedPlayer) const {
     const Player defender = opponent(alignedPlayer);
+    // The breaking capture may be far from the stone that formed the five.
     for (int index = 0; index < CellCount; ++index) {
         Move move{index};
         if (!isCapturingMove(move, defender) || !isLegalMove(move, defender)) {
@@ -433,6 +445,7 @@ bool Board::isWinningMove(Move move, Player player) const {
 }
 
 std::vector<Move> Board::legalMoves(Player player) const {
+    // Restrict candidates to the local area around existing play.
     std::array<bool, CellCount> candidate{};
     bool occupied = false;
     for (int index = 0; index < CellCount; ++index) {
@@ -451,6 +464,7 @@ std::vector<Move> Board::legalMoves(Player player) const {
         }
     }
     if (!occupied) {
+        // Every opening is symmetric, so search the center directly.
         return {{CellCount / 2}};
     }
     std::vector<Move> moves;
@@ -486,18 +500,21 @@ void Engine::checkDeadline() {
 }
 
 Engine::Entry *Engine::probe(uint64_t key) {
+    // The table is direct-mapped; verify the full key after indexing it.
     Entry &entry = table_[key & (table_.size() - 1)];
     return entry.key == key ? &entry : nullptr;
 }
 
 void Engine::store(uint64_t key, int depth, int score, Bound bound, Move bestMove) {
     Entry &entry = table_[key & (table_.size() - 1)];
+    // Prefer information from this search or from a deeper subtree.
     if (entry.generation != generation_ || depth >= entry.depth) {
         entry = {key, score, depth, bestMove, bound, generation_};
     }
 }
 
 int Engine::movePriority(Board &board, Move move, Player player, int ply, Move transpositionMove) {
+    // Reuse successful moves before running the tactical tests below.
     int priority = history_[playerIndex(player)][move.index];
     if (move == transpositionMove) priority += 4'000'000;
     if (ply < static_cast<int>(killers_.size()) && move == killers_[ply][0]) priority += 500'000;
@@ -506,6 +523,7 @@ int Engine::movePriority(Board &board, Move move, Player player, int ply, Move t
     MoveUndo undo;
     const int beforeCaptures = board.captures(player);
     const int beforeEvaluation = board.evaluation(player);
+    // Apply and undo the move to measure its local tactical gain.
     board.play(move, player, undo);
     if (board.isWinningMove(move, player)) priority += 20'000'000;
     priority += (board.captures(player) - beforeCaptures) * 400'000;
@@ -518,9 +536,7 @@ int Engine::movePriority(Board &board, Move move, Player player, int ply, Move t
         const int enemyBeforeEvaluation = board.evaluation(enemy);
         board.play(move, enemy, enemyUndo);
         if (board.isWinningMove(move, enemy)) priority += 10'000'000;
-        // Une case qui permettrait une forte menace adverse est prioritaire en
-        // défense. Le facteur 2 évite qu'une attaque secondaire masque un
-        // quatre ouvert ou un trois cassé à neutraliser immédiatement.
+        // Double the opponent's gain so urgent defensive squares rank highly.
         priority += 2 * (board.evaluation(enemy) - enemyBeforeEvaluation);
         board.undo(enemyUndo);
     }
@@ -535,6 +551,7 @@ std::vector<Move> Engine::orderedMoves(Board &board, Player player, int ply, Mov
         checkDeadline();
         ranked.emplace_back(movePriority(board, move, player, ply, transpositionMove), move);
     }
+    // Coordinates make equal-priority searches deterministic.
     std::sort(ranked.begin(), ranked.end(), [](const auto &left, const auto &right) {
         return left.first != right.first ? left.first > right.first : left.second.index < right.second.index;
     });
@@ -547,6 +564,7 @@ std::vector<Move> Engine::orderedMoves(Board &board, Player player, int ply, Mov
 }
 
 int Engine::branchLimit(int ply, int available) const {
+    // Deep iterations trade width for enough plies to see tactical sequences.
     if (iterationDepth_ >= 8) {
         if (ply == 0) return std::min(16, available);
         if (ply == 1) return std::min(6, available);
@@ -569,6 +587,7 @@ int Engine::negamax(Board &board, Player player, int depth, int ply, int alpha, 
     const uint64_t key = board.hash(player);
     const int originalAlpha = alpha;
     Move transpositionMove;
+    // A stored bound may solve the node or tighten its alpha-beta window.
     if (Entry *entry = probe(key)) {
         transpositionMove = entry->bestMove;
         if (entry->depth >= depth) {
@@ -596,6 +615,7 @@ int Engine::negamax(Board &board, Player player, int depth, int ply, int alpha, 
         }
         alpha = std::max(alpha, score);
         if (alpha >= beta) {
+            // Remember cutoff moves to improve ordering in later nodes.
             history_[playerIndex(player)][move.index] += depth * depth;
             if (ply < static_cast<int>(killers_.size()) && killers_[ply][0] != move) {
                 killers_[ply][1] = killers_[ply][0];
@@ -652,20 +672,15 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
         return aligned;
     };
 
-    // Les tactiques en un coup ne doivent pas dépendre de la profondeur
-    // atteinte ni de l'ordre des coups. C'est particulièrement important avec
-    // un petit budget, où une recherche interrompue conserverait autrement le
-    // premier coup heuristique disponible.
+    // One-move tactics must not depend on depth, ordering, or a small budget.
     for (Move move : legal) {
         if (isImmediateWin(board, move, player)) {
             return finishTacticalMove(move, WinScore);
         }
     }
 
-    // Même lorsqu'un cinq peut encore être cassé par une capture, il force
-    // l'adversaire à répondre à cet alignement. Ne pas laisser le préfiltre
-    // défensif remplacer cette continuation offensive par le blocage du quatre
-    // adverse : l'attaque du joueur au trait doit être examinée en premier.
+    // A breakable five still forces a capture reply, so prefer the attack
+    // before considering a block against the opponent's four.
     for (Move move : legal) {
         if (createsFive(board, move, player)) {
             return finishTacticalMove(move, WinScore - 1);
@@ -674,9 +689,7 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
 
     const Player enemy = opponent(player);
     if (board.hasFive(enemy)) {
-        // Le front accorde exactement ce tour pour casser un cinq encore
-        // capturable. Toute autre réponse valide immédiatement la victoire
-        // adverse, donc cette défense doit elle aussi précéder la recherche.
+        // The UI grants exactly one reply to break a capturable five.
         for (Move defense : legal) {
             MoveUndo defenseUndo;
             board.play(defense, player, defenseUndo);
@@ -708,16 +721,13 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
             return safe;
         };
 
-        // Essayer d'abord les cases gagnantes adverses donne une réponse
-        // immédiate au cas courant d'un quatre fermé à une extrémité.
+        // Try direct blocks first for the common single-ended four.
         for (Move threat : enemyWinningMoves) {
             if (board.isLegalMove(threat, player) && preventsImmediateLoss(threat)) {
                 return finishTacticalMove(threat, 0);
             }
         }
-        // Une capture jouée ailleurs peut parfois casser l'alignement. On la
-        // détecte aussi au lieu de supposer que poser sur la menace est la
-        // seule défense possible.
+        // A remote capture may also remove the threat without a direct block.
         for (Move defense : legal) {
             if (std::find(enemyWinningMoves.begin(), enemyWinningMoves.end(), defense) != enemyWinningMoves.end()) {
                 continue;
@@ -728,12 +738,8 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
         }
     }
 
-    // Un alignement de cinq encore cassable par capture n'est pas signalé
-    // comme une victoire immédiate : le défenseur aura un dernier coup pour
-    // le briser. Il reste toutefois dangereux de laisser l'adversaire le
-    // former, car ce prochain coup devient alors une défense forcée. Traiter
-    // aussi cette menace avant la recherche évite qu'une extension offensive
-    // mieux notée soit conservée à l'expiration du budget.
+    // A breakable five is not an immediate win, but it still forces the next
+    // move. Handle it before selective search can discard its defense.
     std::vector<Move> enemyAlignmentMoves;
     for (Move move : board.legalMoves(enemy)) {
         if (createsFive(board, move, enemy)) {
@@ -755,8 +761,7 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
             return safe;
         };
 
-        // Préférer le blocage direct lorsqu'il suffit. Une capture qui
-        // démantèle la ligne est également acceptée par le second passage.
+        // Prefer a sufficient direct block, then look for capturing defenses.
         for (Move threat : enemyAlignmentMoves) {
             if (board.isLegalMove(threat, player) && preventsAlignment(threat)) {
                 return finishTacticalMove(threat, 0);
@@ -773,8 +778,7 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
         }
     }
 
-    // Conserver des résultats intermédiaires solides lorsque la position est
-    // trop complexe pour terminer directement la recherche tactique profondeur 10.
+    // Keep reliable shallow results before attempting selective depth ten.
     std::vector<int> depths{1, 2, 3, 4, 10};
     for (int depth = 11; depth <= 32; ++depth) depths.push_back(depth);
     for (int depth : depths) {
@@ -800,6 +804,7 @@ SearchResult Engine::findBestMove(Board board, Player player, int budgetMillisec
             result.move = bestMove;
             result.score = bestScore;
             result.completedDepth = depth;
+            // A forced result does not need a deeper iteration.
             if (std::abs(bestScore) >= WinScore - 64) break;
         } catch (const Timeout &) {
             break;

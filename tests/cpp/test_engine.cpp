@@ -201,10 +201,8 @@ void testSearch() {
     expect(urgentBlocking.move == moveAt(12, 9),
         "an immediate opposing win is blocked before extending an attacking three");
 
-    // Position réelle après les neuf premiers coups de la partie signalée.
-    // J2 doit compléter sa colonne en (14, 9), avant de considérer le quatre
-    // adverse en colonne 11. Ce cinq touche le bord inférieur et ne peut pas
-    // être cassé par une capture.
+    // Exact position after the first nine moves of the reported game. Player
+    // two must complete its edge-aligned five before considering a block.
     cells = {};
     for (int row : {15, 16, 17, 18}) cells[moveAt(row, 9).index] = 2;
     for (int row : {15, 16, 17, 18}) cells[moveAt(row, 11).index] = 1;
@@ -220,9 +218,8 @@ void testSearch() {
     expect(reportedImmediateWin.isWinningState(Player::two),
         "reported fifth stone is an immediate, unbreakable win");
 
-    // Les deux joueurs ont un quatre. Le cinq de J2 en (14, 7) est cassable
-    // par la capture de J1 en (17, 6), mais il doit être joué avant le blocage
-    // défensif en (14, 9), puisqu'il impose cette réponse à J1.
+    // Both players have four stones. Player two's breakable five must be
+    // preferred because it forces player one to answer with a capture.
     cells = {};
     for (int row : {15, 16, 17, 18}) {
         cells[moveAt(row, 9).index] = 1;
@@ -245,9 +242,8 @@ void testSearch() {
             "own breakable five is preferred to blocking the opposing four");
     }
 
-    // Variante avec cinq cassable : J1 a quatre pierres verticales et J2 peut
-    // capturer deux pierres en (17, 10). L'existence de cette capture ne doit
-    // pas faire passer l'extension offensive (15, 7) avant le blocage.
+    // Breakable-five variant: a defensive capture must not make an unrelated
+    // attacking extension rank ahead of the required block.
     cells = {};
     for (int row : {15, 16, 17, 18}) cells[moveAt(row, 9).index] = 1;
     cells[moveAt(17, 8).index] = 1;
